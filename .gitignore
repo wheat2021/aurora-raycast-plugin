@@ -1,0 +1,43 @@
+# Dependencies
+/node_modules
+
+# Production
+/build
+
+# Generated files
+.docusaurus
+.cache-loader
+.obsidian
+copilot-conversations/
+copilot-custom-prompts/
+
+
+
+# Misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.swp
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE 配置文件
+.idea/
+
+# 文档库中的配置
+docs/.obsidian.vimrc
+docs/.trash/
+docs/01-问题跟踪/md2wiki.py
+
+LOCAL/
+docs/LINK/
+PRIVATE/
+lastCommit.md
+*.ffs_db
+docs/.*
+docs/SYS/copilot-conversations/
+docs/SYS/copilot-custom-prompts/

@@ -1,0 +1,20 @@
+{
+  "title": "工作信息",
+  "inputs": [
+    {
+      "inputType": "TextLine",
+      "label": "公司名称",
+      "id": "company",
+      "required": true,
+      "default": "ABC科技有限公司",
+      "description": "请输入您当前就职的公司名称。"
+    },
+    {
+      "inputType": "TextLine",
+      "label": "职位",
+      "id": "position",
+      "default": "软件工程师",
+      "description": "请输入您在公司中的职位或角色。"
+    }
+  ]
+}

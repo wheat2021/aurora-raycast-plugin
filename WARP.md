@@ -6,16 +6,40 @@ Aurora 的 Raycast 扩展插件项目。
 
 ```
 aurora-raycast-plugin/
-├── assets/           # 资源文件
-│   └── icon.png     # 插件图标 (512x512)
-├── src/             # 源代码
-│   └── index.tsx    # 主命令入口
-├── .eslintrc.json   # ESLint 配置
-├── .gitignore       # Git 忽略文件
-├── package.json     # 项目配置
-├── tsconfig.json    # TypeScript 配置
-└── README.md        # 项目说明
+├── assets/                    # 资源文件
+│   └── icon.png              # 插件图标 (512x512)
+├── src/                      # 源代码
+│   ├── index.tsx             # 主命令入口
+│   ├── types/                # 类型定义
+│   │   └── form.ts           # 表单相关类型
+│   ├── components/           # React 组件
+│   │   ├── DynamicForm.tsx   # 动态表单组件
+│   │   └── FormField.tsx     # 表单字段组件
+│   ├── config/               # 配置加载
+│   │   └── forms.ts          # 表单配置加载器
+│   ├── configs/              # JSON 配置文件
+│   │   ├── personal-info.json
+│   │   ├── work-info.json
+│   │   └── preferences.json
+│   └── utils/                # 工具函数
+│       ├── extraInputs.ts    # 条件字段显示逻辑
+│       ├── results.ts        # 表单提交处理
+│       └── description.ts    # 动态描述计算
+├── .eslintrc.json            # ESLint 配置
+├── .gitignore                # Git 忽略文件
+├── package.json              # 项目配置
+├── tsconfig.json             # TypeScript 配置
+└── README.md                 # 项目说明
 ```
+
+## 功能特性
+
+✅ **动态表单系统** - 基于 JSON 配置生成表单界面
+✅ **多种输入类型** - 支持文本、多行、下拉、多选、复选框
+✅ **条件字段** - 根据选项动态显示/隐藏字段
+✅ **动态描述** - 根据表达式计算字段描述
+✅ **表单验证** - 支持必填项验证
+✅ **结果复制** - 提交后自动复制到剪贴板
 
 ## 技术栈
 
@@ -50,13 +74,52 @@ pnpm run fix-lint
 ✅ 依赖安装成功
 ✅ 构建流程正常
 ✅ 开发服务器可运行
-⚠️ Lint 验证存在 author 字段警告(不影响开发)
+✅ Lint 验证通过
+✅ 核心功能实现完成
+✅ 示例表单配置完成
+
+## 核心概念
+
+### 表单配置 (FormConfig)
+表单由 JSON 文件定义,包含:
+- `title`: 表单标题
+- `inputs`: 字段数组
+
+### 字段类型 (InputType)
+- **TextLine**: 单行文本输入 (Form.TextField)
+- **MultiLineText**: 多行文本输入 (Form.TextArea)
+- **SingleChoice**: 单选下拉框 (Form.Dropdown)
+- **MultiChoice**: 多选标签选择器 (Form.TagPicker)
+- **BooleanChoice**: 复选框 (Form.Checkbox)
+
+### 条件字段 (Extra Inputs)
+通过 `extraInputs` 属性实现:
+- 在选项中定义 `extraInputs: ["field_id"]`
+- 字段配置中设置 `isExtraInput: true`
+- 选中该选项时自动显示关联字段
+
+### 动态描述 (Dynamic Description)
+支持两种模式:
+1. **静态字符串**: `description: "请输入..."`
+2. **条件表达式**:
+```json
+"description": [
+  {
+    "expression": "field1 === 'value'",
+    "value": "描述一"
+  },
+  {
+    "expression": "field2 > 10",
+    "value": "描述二"
+  }
+]
+```
 
 ## 注意事项
 
 ### Author 字段
-当前 `package.json` 中的 `author` 字段设置为 `"developer"`,这会导致 lint 验证失败,因为 Raycast 要求使用已注册的用户名。发布到商店前需要:
-1. 注册 Raycast 账号
+当前 `package.json` 中的 `author` 字段已设置为 `"wheat2021"`。如果需要发布到商店:
+1. 确保已注册 Raycast 账号
 2. 将 author 字段更新为你的 Raycast 用户名
 
 ### 图标要求

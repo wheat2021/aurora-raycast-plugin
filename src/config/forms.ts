@@ -1,4 +1,9 @@
-import { FormConfig, InputType, JsonFormConfig, InputConfig } from "../types/form";
+import {
+  FormConfig,
+  InputType,
+  JsonFormConfig,
+  InputConfig,
+} from "../types/form";
 import personalInfoJson from "../configs/personal-info.json";
 import workInfoJson from "../configs/work-info.json";
 import preferencesJson from "../configs/preferences.json";

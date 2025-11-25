@@ -39,6 +39,7 @@ export function PromptField({ config, onChange, error }: PromptFieldProps) {
           id={config.id}
           title={requiredLabel}
           placeholder={description}
+          info={description}
           defaultValue={defaultValue as string}
           error={error}
           onChange={(value) => onChange(config.id, value)}
@@ -51,6 +52,7 @@ export function PromptField({ config, onChange, error }: PromptFieldProps) {
           id={config.id}
           title={requiredLabel}
           placeholder={description}
+          info={description}
           defaultValue={defaultValue as string}
           error={error}
           onChange={(value) => onChange(config.id, value)}
@@ -62,6 +64,7 @@ export function PromptField({ config, onChange, error }: PromptFieldProps) {
         <Form.Dropdown
           id={config.id}
           title={requiredLabel}
+          info={description}
           defaultValue={defaultValue as string}
           error={error}
           onChange={(value) => onChange(config.id, value)}
@@ -81,6 +84,7 @@ export function PromptField({ config, onChange, error }: PromptFieldProps) {
         <Form.TagPicker
           id={config.id}
           title={requiredLabel}
+          info={description}
           defaultValue={defaultValue as string[]}
           error={error}
           onChange={(value) => onChange(config.id, value)}
@@ -100,6 +104,7 @@ export function PromptField({ config, onChange, error }: PromptFieldProps) {
         <Form.Checkbox
           id={config.id}
           label={requiredLabel}
+          info={description}
           defaultValue={defaultValue as boolean}
           error={error}
           onChange={(value) => onChange(config.id, value)}

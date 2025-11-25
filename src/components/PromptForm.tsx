@@ -5,34 +5,41 @@ import {
   showToast,
   Toast,
   Clipboard,
+  Icon,
 } from "@raycast/api";
 import { useState, useEffect } from "react";
-import { PromptConfig, PromptValues } from "../types/prompt";
+import { PromptConfig, PromptValues, PromptInput } from "../types/prompt";
 import { PromptField } from "./PromptField";
 import { getVisibleInputIds, getVisibleInputs } from "../utils/extraInputs";
 import { replaceTemplate } from "../utils/template";
+import { InputConfigForm } from "./InputConfigForm";
+import { OptionListManager } from "./InputConfigForm";
+import { savePromptConfig } from "../utils/configWriter";
 
 interface PromptFormProps {
   config: PromptConfig;
 }
 
-export function PromptForm({ config }: PromptFormProps) {
+export function PromptForm({ config: initialConfig }: PromptFormProps) {
+  // 使用状态管理配置，以便保存后能刷新
+  const [config, setConfig] = useState<PromptConfig>(initialConfig);
   const [formValues, setFormValues] = useState<PromptValues>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // 初始化表单值
+  // 组件挂载时初始化表单值，按以下优先级：1. 字段配置的 default 属性；2. 选项中 isDefault=true 的项（multiselect 收集所有默认项，其他类型取第一个）
   useEffect(() => {
     const initialValues: PromptValues = {};
     config.inputs.forEach((input) => {
       if (input.default !== undefined) {
         initialValues[input.id] = input.default;
       } else if (input.options) {
-        // 为选择类型设置默认值
         const defaultOptions = input.options.filter((opt) => opt.isDefault);
         if (defaultOptions.length > 0) {
           if (input.type === "multiselect") {
+            // multiselect 类型：将所有标记为默认的选项值组成数组
             initialValues[input.id] = defaultOptions.map((opt) => opt.value);
           } else {
+            // select 类型：只取第一个默认选项的值
             initialValues[input.id] = defaultOptions[0].value;
           }
         }
@@ -41,7 +48,7 @@ export function PromptForm({ config }: PromptFormProps) {
     setFormValues(initialValues);
   }, [config]);
 
-  // 处理字段值变化
+  // 由子组件 PromptField 触发，更新指定字段的值到 formValues 状态，并清除该字段的验证错误信息（如果存在）
   const handleFieldChange = (
     id: string,
     value: string | string[] | boolean,
@@ -51,7 +58,7 @@ export function PromptForm({ config }: PromptFormProps) {
       [id]: value,
     }));
 
-    // 清除该字段的错误
+    // 用户输入时清除该字段的验证错误，提供即时反馈
     if (errors[id]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -61,9 +68,10 @@ export function PromptForm({ config }: PromptFormProps) {
     }
   };
 
-  // 验证表单
+  // 在表单提交前验证必填字段：仅验证当前可见的字段（基于 extraInputs 逻辑），检查 required=true 的字段是否为空（undefined、空字符串、空数组）
   const validateForm = (values: PromptValues): boolean => {
     const newErrors: Record<string, string> = {};
+    // 通过 extraInputs 逻辑过滤出当前应该显示的字段，隐藏字段不参与验证
     const visibleInputs = getVisibleInputs(config.inputs, values);
 
     visibleInputs.forEach((input) => {
@@ -83,13 +91,13 @@ export function PromptForm({ config }: PromptFormProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  // 生成最终提示词
+  // 将用户输入的值替换到 Markdown 正文模板中的 {{variable}} 占位符，隐藏字段（extraInputs 未触发显示的）替换为空字符串
   const generatePrompt = (values: PromptValues): string => {
     const visibleInputIds = getVisibleInputIds(config.inputs, values);
     return replaceTemplate(config.content, values, visibleInputIds);
   };
 
-  // 处理粘贴（默认 Action，Enter 键）
+  // Enter 键触发：验证表单 → 生成提示词 → 使用 Clipboard.paste() 直接粘贴到前台应用的焦点位置
   const handlePaste = async (values: PromptValues) => {
     if (!validateForm(values)) {
       return;
@@ -103,7 +111,7 @@ export function PromptForm({ config }: PromptFormProps) {
     });
   };
 
-  // 处理复制（Cmd+Enter）
+  // Cmd+Enter 快捷键触发：验证表单 → 生成提示词 → 使用 Clipboard.copy() 仅复制到剪贴板，不自动粘贴
   const handleCopy = async (values: PromptValues) => {
     if (!validateForm(values)) {
       return;
@@ -117,8 +125,45 @@ export function PromptForm({ config }: PromptFormProps) {
     });
   };
 
-  // 获取可见的输入字段
+  // 根据当前表单值和 extraInputs 配置，实时计算应该显示的字段列表（某些字段仅在特定选项被选中时显示）
   const visibleInputs = getVisibleInputs(config.inputs, formValues);
+
+  // 保存字段配置的回调函数
+  const handleSaveInput = async (updatedInput: PromptInput) => {
+    // 更新配置中的对应字段
+    const newInputs = config.inputs.map((input) =>
+      input.id === updatedInput.id ? updatedInput : input,
+    );
+
+    const newConfig = {
+      ...config,
+      inputs: newInputs,
+    };
+
+    // 保存到文件
+    await savePromptConfig(newConfig);
+
+    // 更新本地状态，触发重新渲染
+    setConfig(newConfig);
+
+    // 重新初始化表单值（因为配置可能改变了默认值）
+    const initialValues: PromptValues = {};
+    newInputs.forEach((input) => {
+      if (input.default !== undefined) {
+        initialValues[input.id] = input.default;
+      } else if (input.options) {
+        const defaultOptions = input.options.filter((opt) => opt.isDefault);
+        if (defaultOptions.length > 0) {
+          if (input.type === "multiselect") {
+            initialValues[input.id] = defaultOptions.map((opt) => opt.value);
+          } else {
+            initialValues[input.id] = defaultOptions[0].value;
+          }
+        }
+      }
+    });
+    setFormValues(initialValues);
+  };
 
   return (
     <Form
@@ -134,9 +179,72 @@ export function PromptForm({ config }: PromptFormProps) {
             onSubmit={handleCopy}
             shortcut={{ modifiers: ["cmd"], key: "return" }}
           />
+          <ActionPanel.Section title="字段配置">
+            <ActionPanel.Submenu
+              title="编辑字段配置"
+              icon={Icon.Gear}
+              shortcut={{ modifiers: ["cmd"], key: "e" }}
+            >
+              {config.inputs.map((input) => (
+                <Action.Push
+                  key={input.id}
+                  title={`${input.label} (${input.id})`}
+                  icon={
+                    input.type === "text"
+                      ? Icon.Text
+                      : input.type === "textarea"
+                        ? Icon.Paragraph
+                        : input.type === "select"
+                          ? Icon.ChevronDown
+                          : input.type === "multiselect"
+                            ? Icon.Tag
+                            : Icon.Checkmark
+                  }
+                  target={
+                    <InputConfigForm
+                      input={input}
+                      allInputIds={config.inputs.map((i) => i.id)}
+                      onSave={handleSaveInput}
+                    />
+                  }
+                />
+              ))}
+            </ActionPanel.Submenu>
+            <ActionPanel.Submenu
+              title="管理选项"
+              icon={Icon.List}
+              shortcut={{ modifiers: ["cmd", "shift"], key: "o" }}
+            >
+              {config.inputs
+                .filter(
+                  (input) =>
+                    input.type === "select" || input.type === "multiselect",
+                )
+                .map((input) => (
+                  <Action.Push
+                    key={input.id}
+                    title={`${input.label} (${input.id})`}
+                    icon={input.type === "select" ? Icon.ChevronDown : Icon.Tag}
+                    target={
+                      <OptionListManager
+                        input={input}
+                        allInputIds={config.inputs.map((i) => i.id)}
+                        onSave={handleSaveInput}
+                      />
+                    }
+                  />
+                ))}
+            </ActionPanel.Submenu>
+          </ActionPanel.Section>
         </ActionPanel>
       }
     >
+      {config.formDescription && (
+        <Form.Description
+          title={config.title}
+          text={config.formDescription}
+        />
+      )}
       {visibleInputs.map((input) => (
         <PromptField
           key={input.id}

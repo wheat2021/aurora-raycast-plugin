@@ -37,6 +37,7 @@ export interface PromptInput {
  */
 export interface PromptConfig {
   title: string;
+  formDescription?: string; // 可选：表单整体说明文字
   inputs: PromptInput[];
   content: string; // Markdown 正文，用于模板替换
   filePath?: string; // 可选：源文件路径，用于调试

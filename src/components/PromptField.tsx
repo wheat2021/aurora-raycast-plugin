@@ -1,22 +1,15 @@
 import { Form } from "@raycast/api";
-import { InputConfig, InputType, FormValues } from "../types/form";
-import { getDescription } from "../utils/description";
+import { PromptInput } from "../types/prompt";
 
-interface FormFieldProps {
-  config: InputConfig;
-  formValues: FormValues;
+interface PromptFieldProps {
+  config: PromptInput;
   onChange: (id: string, value: string | string[] | boolean) => void;
   error?: string;
 }
 
-export function FormField({
-  config,
-  formValues,
-  onChange,
-  error,
-}: FormFieldProps) {
-  const description = getDescription(config, formValues);
+export function PromptField({ config, onChange, error }: PromptFieldProps) {
   const requiredLabel = config.required ? `${config.label} *` : config.label;
+  const description = config.description || "";
 
   // 获取默认值
   const getDefaultValue = () => {
@@ -25,15 +18,12 @@ export function FormField({
     }
 
     // 对于选择类型，查找默认选中项
-    if (config.values) {
-      const defaultValues = config.values.filter((v) => v.isDefault);
-      if (config.inputType === InputType.MultiChoice) {
-        return defaultValues.map((v) => v.value);
-      } else if (
-        config.inputType === InputType.SingleChoice &&
-        defaultValues.length > 0
-      ) {
-        return defaultValues[0].value;
+    if (config.options) {
+      const defaultOptions = config.options.filter((opt) => opt.isDefault);
+      if (config.type === "multiselect") {
+        return defaultOptions.map((opt) => opt.value);
+      } else if (config.type === "select" && defaultOptions.length > 0) {
+        return defaultOptions[0].value;
       }
     }
 
@@ -42,8 +32,8 @@ export function FormField({
 
   const defaultValue = getDefaultValue();
 
-  switch (config.inputType) {
-    case InputType.TextLine:
+  switch (config.type) {
+    case "text":
       return (
         <Form.TextField
           id={config.id}
@@ -55,7 +45,7 @@ export function FormField({
         />
       );
 
-    case InputType.MultiLineText:
+    case "textarea":
       return (
         <Form.TextArea
           id={config.id}
@@ -67,7 +57,7 @@ export function FormField({
         />
       );
 
-    case InputType.SingleChoice:
+    case "select":
       return (
         <Form.Dropdown
           id={config.id}
@@ -76,17 +66,17 @@ export function FormField({
           error={error}
           onChange={(value) => onChange(config.id, value)}
         >
-          {config.values?.map((option) => (
+          {config.options?.map((option) => (
             <Form.Dropdown.Item
               key={option.value}
               value={option.value}
-              title={option.display || option.value}
+              title={option.label || option.value}
             />
           ))}
         </Form.Dropdown>
       );
 
-    case InputType.MultiChoice:
+    case "multiselect":
       return (
         <Form.TagPicker
           id={config.id}
@@ -95,17 +85,17 @@ export function FormField({
           error={error}
           onChange={(value) => onChange(config.id, value)}
         >
-          {config.values?.map((option) => (
+          {config.options?.map((option) => (
             <Form.TagPicker.Item
               key={option.value}
               value={option.value}
-              title={option.display || option.value}
+              title={option.label || option.value}
             />
           ))}
         </Form.TagPicker>
       );
 
-    case InputType.BooleanChoice:
+    case "checkbox":
       return (
         <Form.Checkbox
           id={config.id}

@@ -1,6 +1,6 @@
 # Aurora Raycast Plugin
 
-Aurora 的 Raycast 扩展插件项目。
+Aurora 的 Raycast 扩展插件 - 提示词管理器。
 
 ## 项目结构
 
@@ -11,20 +11,16 @@ aurora-raycast-plugin/
 ├── src/                      # 源代码
 │   ├── index.tsx             # 主命令入口
 │   ├── types/                # 类型定义
-│   │   └── form.ts           # 表单相关类型
+│   │   ├── form.ts           # 旧表单类型（兼容）
+│   │   └── prompt.ts         # 提示词相关类型
 │   ├── components/           # React 组件
-│   │   ├── DynamicForm.tsx   # 动态表单组件
-│   │   └── FormField.tsx     # 表单字段组件
+│   │   ├── PromptForm.tsx    # 提示词表单组件
+│   │   └── PromptField.tsx   # 提示词字段组件
 │   ├── config/               # 配置加载
-│   │   └── forms.ts          # 表单配置加载器
-│   ├── configs/              # JSON 配置文件
-│   │   ├── personal-info.json
-│   │   ├── work-info.json
-│   │   └── preferences.json
+│   │   └── prompts.ts        # 提示词配置加载器
 │   └── utils/                # 工具函数
 │       ├── extraInputs.ts    # 条件字段显示逻辑
-│       ├── results.ts        # 表单提交处理
-│       └── description.ts    # 动态描述计算
+│       └── template.ts       # 变量替换引擎
 ├── .eslintrc.json            # ESLint 配置
 ├── .gitignore                # Git 忽略文件
 ├── package.json              # 项目配置
@@ -34,12 +30,14 @@ aurora-raycast-plugin/
 
 ## 功能特性
 
-✅ **动态表单系统** - 基于 JSON 配置生成表单界面
-✅ **多种输入类型** - 支持文本、多行、下拉、多选、复选框
-✅ **条件字段** - 根据选项动态显示/隐藏字段
-✅ **动态描述** - 根据表达式计算字段描述
+✅ **Markdown 配置** - 使用 Markdown 文件（YAML frontmatter + 正文）定义提示词
+✅ **动态变量输入** - 根据 frontmatter 中定义的变量生成表单
+✅ **多种输入类型** - 支持 text、textarea、select、multiselect、checkbox
+✅ **条件字段** - 支持 extraInputs 机制，根据选项动态显示字段
+✅ **模板替换** - {{variable}} 语法替换变量生成最终提示词
+✅ **多种输出方式** - Enter 键粘贴到前台应用，Cmd+Enter 复制到剪贴板
+✅ **可配置目录** - 通过 Preferences 设置提示词存放目录
 ✅ **表单验证** - 支持必填项验证
-✅ **结果复制** - 提交后自动复制到剪贴板
 
 ## 技术栈
 
@@ -48,6 +46,7 @@ aurora-raycast-plugin/
 - **UI**: React (JSX)
 - **包管理器**: pnpm
 - **代码质量**: ESLint + Prettier
+- **依赖库**: gray-matter (Markdown frontmatter 解析)
 
 ## 开发命令
 
@@ -75,44 +74,37 @@ pnpm run fix-lint
 ✅ 构建流程正常
 ✅ 开发服务器可运行
 ✅ Lint 验证通过
-✅ 核心功能实现完成
-✅ 示例表单配置完成
+✅ 提示词管理器功能实现完成
+✅ Markdown 配置读取功能完成
+✅ 变量替换引擎实现完成
+✅ 示例提示词配置完成
 
 ## 核心概念
 
-### 表单配置 (FormConfig)
-表单由 JSON 文件定义,包含:
-- `title`: 表单标题
-- `inputs`: 字段数组
+### 提示词配置 (PromptConfig)
+提示词由 Markdown 文件定义，包含:
+- **frontmatter** (YAML): 定义 title 和 inputs 变量
+- **content** (正文): 包含 {{variable}} 占位符的模板文本
 
-### 字段类型 (InputType)
-- **TextLine**: 单行文本输入 (Form.TextField)
-- **MultiLineText**: 多行文本输入 (Form.TextArea)
-- **SingleChoice**: 单选下拉框 (Form.Dropdown)
-- **MultiChoice**: 多选标签选择器 (Form.TagPicker)
-- **BooleanChoice**: 复选框 (Form.Checkbox)
+### 字段类型 (PromptInputType)
+- **text**: 单行文本输入 (Form.TextField)
+- **textarea**: 多行文本输入 (Form.TextArea)
+- **select**: 单选下拉框 (Form.Dropdown)
+- **multiselect**: 多选标签选择器 (Form.TagPicker)
+- **checkbox**: 复选框 (Form.Checkbox)
 
 ### 条件字段 (Extra Inputs)
 通过 `extraInputs` 属性实现:
-- 在选项中定义 `extraInputs: ["field_id"]`
+- 在选项中定义 `extraInputs: [field_id1, field_id2]`
 - 字段配置中设置 `isExtraInput: true`
 - 选中该选项时自动显示关联字段
+- multiselect 类型支持合并多个选项的 extraInputs
 
-### 动态描述 (Dynamic Description)
-支持两种模式:
-1. **静态字符串**: `description: "请输入..."`
-2. **条件表达式**:
-```json
-"description": [
-  {
-    "expression": "field1 === 'value'",
-    "value": "描述一"
-  },
-  {
-    "expression": "field2 > 10",
-    "value": "描述二"
-  }
-]
+### 变量替换 (Template Replacement)
+- 使用 `{{variable}}` 语法在正文中引用变量
+- multiselect 类型的值自动转换为逗号分隔的字符串
+- checkbox 类型转换为 "是" 或 "否"
+- 未显示的 extraInput 字段替换为空字符串
 ```
 
 ## 注意事项
@@ -127,12 +119,19 @@ pnpm run fix-lint
 - 格式: PNG
 - 当前使用占位图标,可根据需要替换
 
+## 提示词配置示例
+
+查看 `/Users/terrychen/Notes/Prompts/raycast/` 目录下的示例文件:
+- `个人信息.md` - 基础的文本和选择类型
+- `工作信息.md` - 简单的信息收集
+- `偏好设置.md` - 包含 extraInputs 的复杂示例
+
 ## 下一步开发
 
-1. 实现具体的 Aurora 功能
-2. 添加更多命令
-3. 完善用户界面
-4. 编写测试
+1. 添加更多实用的提示词配置
+2. 支持提示词分组和搜索
+3. 实现提示词历史记录
+4. 添加提示词变量预览
 5. 准备发布材料
 
 ## 参考资料

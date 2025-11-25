@@ -14,9 +14,20 @@
       "mode": "view"
     }
   ],
+  "preferences": [
+    {
+      "name": "promptsDirectory",
+      "type": "textfield",
+      "required": true,
+      "title": "提示词目录",
+      "description": "存放提示词 Markdown 文件的目录路径",
+      "default": "/Users/terrychen/Notes/Prompts/raycast"
+    }
+  ],
   "dependencies": {
     "@raycast/api": "^1.103.7",
-    "@raycast/utils": "^2.2.2"
+    "@raycast/utils": "^2.2.2",
+    "gray-matter": "^4.0.3"
   },
   "devDependencies": {
     "@raycast/eslint-config": "^1.0.11",

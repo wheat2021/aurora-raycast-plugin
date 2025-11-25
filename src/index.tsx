@@ -1,25 +1,25 @@
 import { Action, ActionPanel, List, Icon } from "@raycast/api";
-import { loadFormConfigs } from "./config/forms";
-import { DynamicForm } from "./components/DynamicForm";
+import { loadPrompts } from "./config/prompts";
+import { PromptForm } from "./components/PromptForm";
 
 export default function Command() {
-  const formConfigs = loadFormConfigs();
+  const prompts = loadPrompts();
 
   return (
     <List>
-      {formConfigs.map((config, index) => (
+      {prompts.map((prompt, index) => (
         <List.Item
           key={index}
-          icon={Icon.Document}
-          title={config.title}
-          subtitle={`${config.inputs.length} 个字段`}
-          accessories={[{ text: "动态表单" }]}
+          icon={Icon.SpeechBubbleActive}
+          title={prompt.title}
+          subtitle={`${prompt.inputs.length} 个变量`}
+          accessories={[{ text: "提示词" }]}
           actions={
             <ActionPanel>
               <Action.Push
-                title="打开表单"
+                title="打开提示词"
                 icon={Icon.Pencil}
-                target={<DynamicForm config={config} />}
+                target={<PromptForm config={prompt} />}
               />
             </ActionPanel>
           }

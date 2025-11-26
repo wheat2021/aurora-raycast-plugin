@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import { listProcessors, removeProcessor } from "./utils/storage";
 import { ProcessorConfig } from "./types/processor";
 import { PromptList } from "./components/PromptList";
+import { ConfigGuide } from "./components/ConfigGuide";
 
 export default function Command() {
   const [processors, setProcessors] = useState<ProcessorConfig[]>([]);
@@ -88,7 +89,7 @@ export default function Command() {
     <List isLoading={isLoading} searchBarPlaceholder="搜索 Processor...">
       <List.EmptyView
         title="没有找到 Processor"
-        description="使用 'Create Input Processor' 命令创建第一个 Processor"
+        description="使用 'Create Input Processor' 命令创建第一个 Processor。创建后需在 Raycast Preferences 中配置 processor-N 命令的 processorId 以启用快捷键。"
         icon={Icon.Folder}
       />
 
@@ -113,6 +114,12 @@ export default function Command() {
                 icon={Icon.Clipboard}
                 onAction={() => handleCopyId(processor)}
                 shortcut={{ modifiers: ["cmd"], key: "c" }}
+              />
+              <Action.Push
+                title="查看配置说明"
+                icon={Icon.QuestionMark}
+                target={<ConfigGuide processorId={processor.id} />}
+                shortcut={{ modifiers: ["cmd"], key: "h" }}
               />
               <Action
                 title="打开扩展设置"

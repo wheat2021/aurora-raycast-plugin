@@ -6,11 +6,10 @@ import {
   Toast,
   Clipboard,
   Icon,
-  popToRoot,
-  openExtensionPreferences,
 } from "@raycast/api";
 import { useState } from "react";
 import { addProcessor } from "./utils/storage";
+import { ConfigGuide } from "./components/ConfigGuide";
 import * as fs from "fs";
 
 export default function Command() {
@@ -67,15 +66,10 @@ export default function Command() {
 
       toast.style = Toast.Style.Success;
       toast.title = "创建成功!";
-      toast.message = "Processor ID 已复制到剪贴板";
-      toast.primaryAction = {
-        title: "打开扩展设置",
-        onAction: async () => {
-          await openExtensionPreferences();
-        },
-      };
+      toast.message = "请在 Raycast Preferences 中配置 Processor ID";
 
-      await popToRoot();
+      // 不自动 popToRoot，而是推送到配置向导页面
+      // await popToRoot();
     } catch (error) {
       toast.style = Toast.Style.Failure;
       toast.title = "创建失败";
@@ -91,6 +85,12 @@ export default function Command() {
             title="创建 Processor"
             icon={Icon.Plus}
             onSubmit={handleSubmit}
+          />
+          <Action.Push
+            title="查看配置说明"
+            icon={Icon.QuestionMark}
+            target={<ConfigGuide />}
+            shortcut={{ modifiers: ["cmd"], key: "h" }}
           />
         </ActionPanel>
       }
@@ -130,7 +130,17 @@ export default function Command() {
         />
       </Form.Dropdown>
 
-      <Form.Description text="创建后，请在 Raycast Preferences 中配置 processor-N 命令的 processorId。" />
+      <Form.Description
+        text="创建后需要配置：
+1. Processor ID 会自动复制到剪贴板
+2. 打开 Raycast Preferences (Cmd+,)
+3. 找到 Aurora Input Processor 扩展
+4. 选择任意一个 Input Processor N 命令
+5. 粘贴 Processor ID 并启用命令
+6. 设置快捷键（可选）
+
+💡 按 Cmd+H 查看详细配置说明"
+      />
     </Form>
   );
 }

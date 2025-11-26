@@ -38,15 +38,72 @@ pnpm build
 pnpm lint
 ```
 
-## 使用说明
+## 快速开始
 
-### 创建 Processor
+### 第一步：创建 Processor
 
-1. 运行 "Create Input Processor" 命令
-2. 输入名称和目录路径
-3. Processor ID 会自动复制到剪贴板
-4. 在 Raycast Preferences 中配置某个 "Input Processor N" 命令的 processorId
-5. 启用该命令并设置快捷键（可选）
+1. **运行命令**
+   - 在 Raycast 中运行 "Create Input Processor" 命令
+
+2. **填写信息**
+   - 名称：为你的 Processor 起一个易识别的名称（例如："工作提示词"）
+   - 目录路径：选择存放 Markdown 提示词文件的目录（例如：`/Users/yourname/prompts`）
+   - 图标：可选，选择一个喜欢的图标
+
+3. **创建成功**
+   - Processor ID 会自动复制到剪贴板
+   - 记下这个 ID，接下来配置时需要使用
+
+### 第二步：配置命令快捷键
+
+1. **打开 Raycast 设置**
+   - 按 `Cmd + ,` 或点击 Raycast 菜单 → Preferences
+
+2. **找到扩展**
+   - 在左侧导航栏找到 "Extensions"
+   - 找到 "Aurora Input Processor" 扩展
+
+3. **选择命令槽位**
+   - 插件提供 10 个独立命令："Input Processor 1" 到 "Input Processor 10"
+   - 选择任意一个尚未使用的命令（默认都是禁用状态）
+
+4. **配置 Processor ID**
+   - 在 "Processor ID" 字段粘贴刚才复制的 ID
+   - 勾选 "Enable Command" 启用该命令
+
+5. **设置快捷键（可选但推荐）**
+   - 点击 "Record Hotkey" 设置快捷键
+   - 例如：`Cmd + Shift + P`
+   - 这样就可以通过快捷键快速调用该 Processor
+
+### 第三步：使用 Processor
+
+1. **打开 Processor**
+   - 通过刚才设置的快捷键，或
+   - 在 Raycast 搜索 "Input Processor N"（你配置的那个）
+
+2. **选择提示词**
+   - 会显示该目录下所有的 Markdown 提示词文件
+   - 选择需要使用的提示词
+
+3. **填写表单**
+   - 根据提示词定义的字段填写信息
+   - 必填字段会有验证提示
+
+4. **执行**
+   - `Enter`：将生成的内容粘贴到当前活动应用
+   - `Cmd + Enter`：复制到剪贴板
+
+## 管理 Processors
+
+### 查看所有 Processors
+
+运行 "Manage Input Processors" 命令，可以：
+- 查看所有已创建的 Processor
+- 打开某个 Processor 的提示词列表
+- 复制 Processor ID（按 `Cmd + C`）
+- 查看配置说明（按 `Cmd + H`）
+- 删除不需要的 Processor（按 `Cmd + Delete`）
 
 ### 添加新提示词
 
@@ -166,6 +223,81 @@ exit $?
 ```
 
 详细测试说明请查看 [EXEC_SCRIPT_TEST.md](./EXEC_SCRIPT_TEST.md)
+
+## 常见问题（FAQ）
+
+### Q: 创建 Processor 后在哪里使用？
+
+A: 创建 Processor 后需要在 Raycast Preferences 中配置。插件提供了 10 个独立命令槽位（"Input Processor 1" 到 "Input Processor 10"），你需要：
+1. 打开 Raycast Preferences（`Cmd + ,`）
+2. 找到 Aurora Input Processor 扩展
+3. 选择一个 "Input Processor N" 命令
+4. 粘贴 Processor ID 并启用
+5. 可以为该命令设置独立的快捷键
+
+💡 这样设计的好处是每个 Processor 都是独立的命令，可以设置不同的快捷键快速访问。
+
+### Q: 最多可以创建多少个 Processor？
+
+A: 目前最多支持 10 个独立的 Processor 命令。如果需要更多，可以修改代码添加更多 processor-N 命令。但对于大多数使用场景，10 个应该足够了。
+
+### Q: 如何管理现有的 Processors？
+
+A: 使用 "Manage Input Processors" 命令可以：
+- 查看所有 Processor 及其配置
+- 打开 Processor 的提示词列表
+- 复制 Processor ID 用于配置新命令
+- 删除不需要的 Processor
+
+### Q: Processor ID 丢失了怎么办？
+
+A: 运行 "Manage Input Processors" 命令，选择对应的 Processor，按 `Cmd + C` 即可复制其 ID。
+
+### Q: 为什么我配置的命令显示 "未配置"？
+
+A: 请检查：
+1. 是否在命令设置中正确粘贴了 Processor ID
+2. 是否启用了该命令（勾选 "Enable Command"）
+3. Processor ID 对应的 Processor 是否还存在（可在 Manage Processors 中查看）
+
+点击 "打开命令设置" 按钮可以快速进入配置页面。
+
+### Q: 如何在提示词中使用条件字段？
+
+A: 使用 `extraInputs` 机制。在选项中指定 `extraInputs` 数组，当选中该选项时，对应的字段会自动显示。详见文档中的 "条件字段" 示例。
+
+### Q: 可以执行自定义脚本吗？
+
+A: 可以。在 frontmatter 中配置 `execScript` 参数指向你的脚本文件。用户输入会转换为环境变量传递给脚本。详见 "脚本执行" 部分。
+
+### Q: 提示词文件支持哪些格式？
+
+A: 目前只支持 Markdown 格式（`.md` 文件），文件需要包含 YAML frontmatter 和正文模板两部分。
+
+### Q: 如何分享我的提示词配置？
+
+A: 直接分享 Markdown 文件即可。其他用户创建 Processor 指向包含这些文件的目录，就可以使用你的提示词了。
+
+## 技术架构
+
+### Processor 配置存储
+
+Processor 配置使用 Raycast 的 LocalStorage API 持久化存储，包含以下信息：
+- `id`: 唯一标识符
+- `name`: 显示名称
+- `directory`: 目标目录路径
+- `icon`: 可选图标
+- `createdAt`: 创建时间戳
+
+### 命令槽位机制
+
+插件预定义了 10 个通用命令（processor-1 到 processor-10），每个命令：
+- 默认禁用（`disabledByDefault: true`）
+- 有独立的命令级 preference: `processorId`
+- 运行时从 LocalStorage 读取对应的 Processor 配置
+- 可单独设置快捷键和别名
+
+这种设计平衡了灵活性和简单性，避免了动态命令生成的复杂性。
 
 ## 许可证
 

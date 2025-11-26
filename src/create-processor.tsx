@@ -135,10 +135,11 @@ export default function Command() {
 1. Processor ID 会自动复制到剪贴板
 2. 打开 Raycast Preferences (Cmd+,)
 3. 找到 Aurora Input Processor 扩展
-4. 选择任意一个 Input Processor N 命令
+4. 选择任意一个 Processor N 命令
 5. 粘贴 Processor ID 并启用命令
 6. 设置快捷键（可选）
 
+✨ 配置后，命令的副标题会自动显示为你的 Processor 名称，方便搜索时识别。
 💡 按 Cmd+H 查看详细配置说明"
       />
     </Form>

@@ -7,6 +7,7 @@ import {
   openCommandPreferences,
   launchCommand,
   LaunchType,
+  updateCommandMetadata,
 } from "@raycast/api";
 import { useState, useEffect } from "react";
 import { getProcessor } from "./utils/storage";
@@ -34,6 +35,8 @@ export default function Command() {
 
       if (!preferences.processorId) {
         setError("未配置 Processor ID");
+        // 清除 subtitle
+        await updateCommandMetadata({ subtitle: null });
         setIsLoading(false);
         return;
       }
@@ -41,10 +44,14 @@ export default function Command() {
       const config = await getProcessor(preferences.processorId);
       if (!config) {
         setError(`找不到 Processor: ${preferences.processorId}`);
+        // 清除 subtitle
+        await updateCommandMetadata({ subtitle: null });
         setIsLoading(false);
         return;
       }
 
+      // 更新 subtitle 为 processor 名称
+      await updateCommandMetadata({ subtitle: config.name });
       setProcessor(config);
     } catch (err) {
       setError(err instanceof Error ? err.message : "加载失败");

@@ -15,6 +15,7 @@ Aurora Input Processor - 支持多文件夹的提示词处理器。
 ✅ **表单验证** - 支持必填项验证
 ✅ **多文件夹支持** - 支持创建多个 Processor，每个指向不同目录
 ✅ **独立命令** - 每个 Processor 都是独立的 Raycast 命令，可单独设置快捷键
+✅ **智能搜索** - 命令副标题自动显示 Processor 名称，方便快速搜索和识别
 
 ## 安装
 
@@ -64,12 +65,13 @@ pnpm lint
    - 找到 "Aurora Input Processor" 扩展
 
 3. **选择命令槽位**
-   - 插件提供 10 个独立命令："Input Processor 1" 到 "Input Processor 10"
+   - 插件提供 10 个独立命令："Processor 1" 到 "Processor 10"
    - 选择任意一个尚未使用的命令（默认都是禁用状态）
 
 4. **配置 Processor ID**
    - 在 "Processor ID" 字段粘贴刚才复制的 ID
    - 勾选 "Enable Command" 启用该命令
+   - ✨ 配置后，命令的副标题会自动显示为你的 Processor 名称，方便搜索时识别
 
 5. **设置快捷键（可选但推荐）**
    - 点击 "Record Hotkey" 设置快捷键
@@ -80,7 +82,7 @@ pnpm lint
 
 1. **打开 Processor**
    - 通过刚才设置的快捷键，或
-   - 在 Raycast 搜索 "Input Processor N"（你配置的那个）
+   - 在 Raycast 搜索 "Processor N"（你配置的那个）或直接搜索你的 Processor 名称
 
 2. **选择提示词**
    - 会显示该目录下所有的 Markdown 提示词文件

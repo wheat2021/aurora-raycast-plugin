@@ -15,6 +15,7 @@ import { replaceTemplate } from "../utils/template";
 import { InputConfigForm } from "./InputConfigForm";
 import { OptionListManager } from "./InputConfigForm";
 import { savePromptConfig } from "../utils/configWriter";
+import { executeScript } from "../utils/execScript";
 
 interface PromptFormProps {
   config: PromptConfig;
@@ -97,12 +98,47 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     return replaceTemplate(config.content, values, visibleInputIds);
   };
 
-  // Enter 键触发：验证表单 → 生成提示词 → 使用 Clipboard.paste() 直接粘贴到前台应用的焦点位置
+  // Enter 键触发：验证表单 → 根据是否有 execScript 决定执行脚本或粘贴内容
   const handlePaste = async (values: PromptValues) => {
     if (!validateForm(values)) {
       return;
     }
 
+    // 如果配置了 execScript，执行脚本而非粘贴内容
+    if (config.execScript) {
+      const toast = await showToast({
+        style: Toast.Style.Animated,
+        title: "正在执行脚本...",
+      });
+
+      try {
+        const visibleInputIds = getVisibleInputIds(config.inputs, values);
+        const { stdout, stderr } = await executeScript(
+          config.execScript,
+          values,
+          visibleInputIds,
+        );
+
+        toast.style = Toast.Style.Success;
+        toast.title = "脚本执行成功";
+
+        // 如果有输出，记录到日志
+        if (stdout) {
+          console.log("Script stdout:", stdout);
+        }
+        if (stderr) {
+          console.warn("Script stderr:", stderr);
+        }
+      } catch (error) {
+        toast.style = Toast.Style.Failure;
+        toast.title = "脚本执行失败";
+        toast.message = error instanceof Error ? error.message : "未知错误";
+        console.error("Script execution error:", error);
+      }
+      return;
+    }
+
+    // 原有逻辑：生成提示词并粘贴
     const prompt = generatePrompt(values);
     await Clipboard.paste(prompt);
     await showToast({
@@ -111,12 +147,47 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     });
   };
 
-  // Cmd+Enter 快捷键触发：验证表单 → 生成提示词 → 使用 Clipboard.copy() 仅复制到剪贴板，不自动粘贴
+  // Cmd+Enter 快捷键触发：验证表单 → 根据是否有 execScript 决定执行脚本或复制内容
   const handleCopy = async (values: PromptValues) => {
     if (!validateForm(values)) {
       return;
     }
 
+    // 如果配置了 execScript，执行脚本而非复制内容
+    if (config.execScript) {
+      const toast = await showToast({
+        style: Toast.Style.Animated,
+        title: "正在执行脚本...",
+      });
+
+      try {
+        const visibleInputIds = getVisibleInputIds(config.inputs, values);
+        const { stdout, stderr } = await executeScript(
+          config.execScript,
+          values,
+          visibleInputIds,
+        );
+
+        toast.style = Toast.Style.Success;
+        toast.title = "脚本执行成功";
+
+        // 如果有输出，记录到日志
+        if (stdout) {
+          console.log("Script stdout:", stdout);
+        }
+        if (stderr) {
+          console.warn("Script stderr:", stderr);
+        }
+      } catch (error) {
+        toast.style = Toast.Style.Failure;
+        toast.title = "脚本执行失败";
+        toast.message = error instanceof Error ? error.message : "未知错误";
+        console.error("Script execution error:", error);
+      }
+      return;
+    }
+
+    // 原有逻辑：生成提示词并复制
     const prompt = generatePrompt(values);
     await Clipboard.copy(prompt);
     await showToast({
@@ -240,10 +311,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
       }
     >
       {config.formDescription && (
-        <Form.Description
-          title={config.title}
-          text={config.formDescription}
-        />
+        <Form.Description title={config.title} text={config.formDescription} />
       )}
       {visibleInputs.map((input) => (
         <PromptField

@@ -1,15 +1,19 @@
 # Aurora Raycast Plugin
 
-Aurora 的 Raycast 扩展插件，基于动态表单系统快速创建和管理各类表单。
+Aurora 的 Raycast 扩展插件 - 提示词管理器。
 
 ## 功能特性
 
-✅ **动态表单系统** - 基于 JSON 配置生成表单界面
-✅ **多种输入类型** - 支持文本、多行、下拉、多选、复选框
-✅ **条件字段** - 根据选项动态显示/隐藏字段
-✅ **动态描述** - 根据表达式计算字段描述
+✅ **Markdown 配置** - 使用 Markdown 文件（YAML frontmatter + 正文）定义提示词
+✅ **动态变量输入** - 根据 frontmatter 中定义的变量生成表单
+✅ **多种输入类型** - 支持 text、textarea、select、multiselect、checkbox
+✅ **条件字段** - 支持 extraInputs 机制，根据选项动态显示字段
+✅ **模板替换** - {{variable}} 语法替换变量生成最终提示词
+✅ **多种输出方式** - Enter 键粘贴到前台应用，Cmd+Enter 复制到剪贴板
+✅ **脚本执行** - 支持执行自定义脚本处理用户输入
+✅ **配置编辑** - 在 Raycast 界面直接编辑提示词配置
 ✅ **表单验证** - 支持必填项验证
-✅ **结果复制** - 提交后自动复制到剪贴板
+✅ **可配置目录** - 通过 Preferences 设置提示词存放目录
 
 ## 安装
 
@@ -35,83 +39,124 @@ pnpm lint
 
 ## 使用说明
 
-### 添加新表单
+### 添加新提示词
 
-1. 在 `src/configs/` 目录下创建新的 JSON 配置文件
-2. 在 `src/config/forms.ts` 中导入并添加到配置列表
-3. 运行 `pnpm dev` 查看效果
+1. 在配置的提示词目录下（默认 `~/Notes/Prompts/raycast/`）创建新的 Markdown 文件
+2. 文件包含 YAML frontmatter（定义 title、inputs 等）和正文模板
+3. 重启插件或重新加载配置
 
-### JSON 配置格式
+### Markdown 配置格式
 
-```json
-{
-  "title": "表单标题",
-  "inputs": [
-    {
-      "inputType": "TextLine",
-      "label": "字段标签",
-      "id": "field_id",
-      "required": true,
-      "description": "字段描述"
-    }
-  ]
-}
+```markdown
+---
+title: 代码审查
+formDescription: 请填写以下信息，生成代码审查提示词
+inputs:
+  - id: code
+    label: 代码内容
+    type: textarea
+    required: true
+  - id: language
+    label: 编程语言
+    type: select
+    options:
+      - value: typescript
+        label: TypeScript
+      - value: python
+---
+请审查以下 {{language}} 代码：
+
+```{{language}}
+{{code}}
+```
+
+请提供改进建议。
 ```
 
 ### 支持的输入类型
 
-- `TextLine`: 单行文本输入 (Form.TextField)
-- `MultiLineText`: 多行文本输入 (Form.TextArea)
-- `SingleChoice`: 单选下拉框 (Form.Dropdown)
-- `MultiChoice`: 多选标签选择器 (Form.TagPicker)
-- `BooleanChoice`: 复选框 (Form.Checkbox)
+- `text`: 单行文本输入 (Form.TextField)
+- `textarea`: 多行文本输入 (Form.TextArea)
+- `select`: 单选下拉框 (Form.Dropdown)
+- `multiselect`: 多选标签选择器 (Form.TagPicker)
+- `checkbox`: 复选框 (Form.Checkbox)
 
 ### 条件字段 (Extra Inputs)
 
 可以根据选项选择动态显示额外字段：
 
-```json
-{
-  "inputType": "SingleChoice",
-  "label": "设备类型",
-  "id": "device_type",
-  "values": [
-    {
-      "value": "mobile",
-      "display": "移动设备",
-      "extraInputs": ["device_model"]
-    },
-    {
-      "value": "desktop",
-      "display": "桌面设备"
-    }
-  ]
-}
+```markdown
+---
+title: 兴趣爱好
+inputs:
+  - id: hobbies
+    label: 选择兴趣
+    type: multiselect
+    options:
+      - value: 阅读
+        extraInputs: [bookType]
+      - value: 运动
+        extraInputs: [sportType]
+  - id: bookType
+    label: 喜欢的书籍类型
+    type: text
+    isExtraInput: true
+  - id: sportType
+    label: 喜欢的运动类型
+    type: text
+    isExtraInput: true
+---
+我的兴趣爱好：{{hobbies}}
+喜欢的书籍类型：{{bookType}}
+喜欢的运动类型：{{sportType}}
 ```
 
-当选择“移动设备”时，会自动显示 `device_model` 字段。
+### 脚本执行 (execScript)
 
-### 动态描述
+支持执行自定义脚本处理用户输入，而非粘贴/复制内容：
 
-支持根据表单值动态计算字段描述：
-
-```json
-{
-  "inputType": "TextLine",
-  "label": "数量",
-  "id": "quantity",
-  "description": [
-    {
-      "expression": "device_type === 'mobile'",
-      "value": "移动设备数量"
-    },
-    {
-      "expression": "device_type === 'desktop'",
-      "value": "桌面设备数量"
-    }
-  ]
-}
+```markdown
+---
+title: 个人信息
+execScript: /path/to/your/script.sh
+inputs:
+  - id: name
+    label: 姓名
+    type: text
+    required: true
+  - id: email
+    label: 邮箱
+    type: text
+---
+姓名：{{name}}
+邮箱：{{email}}
 ```
+
+**功能说明：**
+- 当配置了 `execScript` 参数时，提交表单将执行指定的脚本
+- 用户输入的字段值会转换为环境变量传递给脚本
+- 字段 ID 转大写作为环境变量名（如 `name` → `NAME`）
+- multiselect 类型转为逗号分隔字符串
+- checkbox 类型转为 "true" 或 "false"
+- 隐藏字段（extraInputs 未触发）不设置环境变量
+
+**示例脚本：**
+```bash
+#!/usr/bin/env bash
+
+# 读取环境变量
+name="$NAME"
+email="$EMAIL"
+
+# 发送到 API
+curl -X POST https://api.example.com/users \
+  -H "Content-Type: application/json" \
+  -d "{\"name\": \"$name\", \"email\": \"$email\"}"
+
+exit $?
+```
+
+详细测试说明请查看 [EXEC_SCRIPT_TEST.md](./EXEC_SCRIPT_TEST.md)
 
 ## 许可证
 

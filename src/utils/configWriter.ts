@@ -43,10 +43,18 @@ export async function savePromptConfig(config: PromptConfig): Promise<void> {
     const cleanedInputs = removeUndefined(config.inputs);
 
     // 构建 frontmatter 对象
-    const frontmatter = {
+    const frontmatter: Record<string, unknown> = {
       title: config.title,
       inputs: cleanedInputs,
     };
+
+    // 添加可选字段
+    if (config.formDescription) {
+      frontmatter.formDescription = config.formDescription;
+    }
+    if (config.execScript) {
+      frontmatter.execScript = config.execScript;
+    }
 
     // 使用 gray-matter 生成 MD 内容
     const fileContent = matter.stringify(config.content, frontmatter);

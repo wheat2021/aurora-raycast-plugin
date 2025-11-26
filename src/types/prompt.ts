@@ -38,6 +38,7 @@ export interface PromptInput {
 export interface PromptConfig {
   title: string;
   formDescription?: string; // 可选：表单整体说明文字
+  execScript?: string; // 可选：指定脚本路径，存在时执行脚本而非粘贴/复制内容
   inputs: PromptInput[];
   content: string; // Markdown 正文，用于模板替换
   filePath?: string; // 可选：源文件路径，用于调试

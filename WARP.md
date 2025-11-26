@@ -20,7 +20,9 @@ aurora-raycast-plugin/
 │   │   └── prompts.ts        # 提示词配置加载器
 │   └── utils/                # 工具函数
 │       ├── extraInputs.ts    # 条件字段显示逻辑
-│       └── template.ts       # 变量替换引擎
+│       ├── template.ts       # 变量替换引擎
+│       ├── configWriter.ts   # 将配置保存回 Markdown
+│       └── execScript.ts     # 执行外部脚本并传递环境变量
 ├── .eslintrc.json            # ESLint 配置
 ├── .gitignore                # Git 忽略文件
 ├── package.json              # 项目配置
@@ -36,6 +38,7 @@ aurora-raycast-plugin/
 ✅ **条件字段** - 支持 extraInputs 机制，根据选项动态显示字段
 ✅ **模板替换** - {{variable}} 语法替换变量生成最终提示词
 ✅ **多种输出方式** - Enter 键粘贴到前台应用，Cmd+Enter 复制到剪贴板
+✅ **脚本执行（execScript）** - 将用户输入转为环境变量并执行外部脚本
 ✅ **可配置目录** - 通过 Preferences 设置提示词存放目录
 ✅ **表单验证** - 支持必填项验证
 
@@ -105,6 +108,12 @@ pnpm run fix-lint
 - multiselect 类型的值自动转换为逗号分隔的字符串
 - checkbox 类型转换为 "是" 或 "否"
 - 未显示的 extraInput 字段替换为空字符串
+
+### 脚本执行 (execScript)
+- 在 frontmatter 中配置 `execScript: /path/to/script.sh`
+- 提交时将可见字段的值转换为环境变量：`id` → `ID`（大写）
+- multiselect → 逗号分隔字符串，checkbox → "true"/"false"
+- 使用 `execFile` 执行脚本（30s 超时），显示执行结果 Toast
 ```
 
 ## 注意事项

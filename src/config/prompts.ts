@@ -43,6 +43,7 @@ export function loadPrompts(): PromptConfig[] {
       const promptConfig: PromptConfig = {
         title: parsed.data.title,
         formDescription: parsed.data.formDescription,
+        execScript: parsed.data.execScript,
         inputs: validateInputs(parsed.data.inputs),
         content: parsed.content.trim(),
         filePath,

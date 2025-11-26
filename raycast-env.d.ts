@@ -7,21 +7,92 @@
 
 /* eslint-disable @typescript-eslint/ban-types */
 
-type ExtensionPreferences = {
-  /** 提示词目录 - 存放提示词 Markdown 文件的目录路径 */
-  "promptsDirectory": string
-}
+type ExtensionPreferences = {}
 
 /** Preferences accessible in all the extension's commands */
 declare type Preferences = ExtensionPreferences
 
 declare namespace Preferences {
-  /** Preferences accessible in the `index` command */
-  export type Index = ExtensionPreferences & {}
+  /** Preferences accessible in the `manage-processors` command */
+  export type ManageProcessors = ExtensionPreferences & {}
+  /** Preferences accessible in the `create-processor` command */
+  export type CreateProcessor = ExtensionPreferences & {}
+  /** Preferences accessible in the `processor-1` command */
+  export type Processor1 = ExtensionPreferences & {
+  /** Processor ID - The ID of the processor to use */
+  "processorId"?: string
+}
+  /** Preferences accessible in the `processor-2` command */
+  export type Processor2 = ExtensionPreferences & {
+  /** Processor ID - The ID of the processor to use */
+  "processorId"?: string
+}
+  /** Preferences accessible in the `processor-3` command */
+  export type Processor3 = ExtensionPreferences & {
+  /** Processor ID - The ID of the processor to use */
+  "processorId"?: string
+}
+  /** Preferences accessible in the `processor-4` command */
+  export type Processor4 = ExtensionPreferences & {
+  /** Processor ID - The ID of the processor to use */
+  "processorId"?: string
+}
+  /** Preferences accessible in the `processor-5` command */
+  export type Processor5 = ExtensionPreferences & {
+  /** Processor ID - The ID of the processor to use */
+  "processorId"?: string
+}
+  /** Preferences accessible in the `processor-6` command */
+  export type Processor6 = ExtensionPreferences & {
+  /** Processor ID - The ID of the processor to use */
+  "processorId"?: string
+}
+  /** Preferences accessible in the `processor-7` command */
+  export type Processor7 = ExtensionPreferences & {
+  /** Processor ID - The ID of the processor to use */
+  "processorId"?: string
+}
+  /** Preferences accessible in the `processor-8` command */
+  export type Processor8 = ExtensionPreferences & {
+  /** Processor ID - The ID of the processor to use */
+  "processorId"?: string
+}
+  /** Preferences accessible in the `processor-9` command */
+  export type Processor9 = ExtensionPreferences & {
+  /** Processor ID - The ID of the processor to use */
+  "processorId"?: string
+}
+  /** Preferences accessible in the `processor-10` command */
+  export type Processor10 = ExtensionPreferences & {
+  /** Processor ID - The ID of the processor to use */
+  "processorId"?: string
+}
 }
 
 declare namespace Arguments {
-  /** Arguments passed to the `index` command */
-  export type Index = {}
+  /** Arguments passed to the `manage-processors` command */
+  export type ManageProcessors = {}
+  /** Arguments passed to the `create-processor` command */
+  export type CreateProcessor = {}
+  /** Arguments passed to the `processor-1` command */
+  export type Processor1 = {}
+  /** Arguments passed to the `processor-2` command */
+  export type Processor2 = {}
+  /** Arguments passed to the `processor-3` command */
+  export type Processor3 = {}
+  /** Arguments passed to the `processor-4` command */
+  export type Processor4 = {}
+  /** Arguments passed to the `processor-5` command */
+  export type Processor5 = {}
+  /** Arguments passed to the `processor-6` command */
+  export type Processor6 = {}
+  /** Arguments passed to the `processor-7` command */
+  export type Processor7 = {}
+  /** Arguments passed to the `processor-8` command */
+  export type Processor8 = {}
+  /** Arguments passed to the `processor-9` command */
+  export type Processor9 = {}
+  /** Arguments passed to the `processor-10` command */
+  export type Processor10 = {}
 }
 

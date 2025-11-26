@@ -1,19 +1,13 @@
-import { getPreferenceValues } from "@raycast/api";
 import * as fs from "fs";
 import * as path from "path";
 import matter from "gray-matter";
 import { PromptConfig, PromptInput } from "../types/prompt";
 
-interface Preferences {
-  promptsDirectory: string;
-}
-
 /**
  * 从指定目录加载所有提示词配置
  */
-export function loadPrompts(): PromptConfig[] {
-  const preferences = getPreferenceValues<Preferences>();
-  const promptsDir = preferences.promptsDirectory;
+export function loadPromptsFromDirectory(directory: string): PromptConfig[] {
+  const promptsDir = directory;
 
   // 检查目录是否存在
   if (!fs.existsSync(promptsDir)) {

@@ -1,6 +1,6 @@
-# Aurora Raycast Plugin
+# Aurora Input Processor
 
-Aurora 的 Raycast 扩展插件 - 提示词管理器。
+Aurora Input Processor - 支持多文件夹的提示词处理器。
 
 ## 项目结构
 
@@ -9,16 +9,22 @@ aurora-raycast-plugin/
 ├── assets/                    # 资源文件
 │   └── icon.png              # 插件图标 (512x512)
 ├── src/                      # 源代码
-│   ├── index.tsx             # 主命令入口
+│   ├── manage-processors.tsx # 管理 Processor 命令
+│   ├── create-processor.tsx  # 创建 Processor 命令
+│   ├── processor.tsx         # 通用 Processor 入口模板
+│   ├── processor-[1-10].tsx  # 10 个 Processor 命令入口
 │   ├── types/                # 类型定义
 │   │   ├── form.ts           # 旧表单类型（兼容）
-│   │   └── prompt.ts         # 提示词相关类型
+│   │   ├── prompt.ts         # 提示词相关类型
+│   │   └── processor.ts      # Processor 配置类型
 │   ├── components/           # React 组件
 │   │   ├── PromptForm.tsx    # 提示词表单组件
-│   │   └── PromptField.tsx   # 提示词字段组件
+│   │   ├── PromptField.tsx   # 提示词字段组件
+│   │   └── PromptList.tsx    # 提示词列表组件
 │   ├── config/               # 配置加载
 │   │   └── prompts.ts        # 提示词配置加载器
 │   └── utils/                # 工具函数
+│       ├── storage.ts        # LocalStorage 操作
 │       ├── extraInputs.ts    # 条件字段显示逻辑
 │       ├── template.ts       # 变量替换引擎
 │       ├── configWriter.ts   # 将配置保存回 Markdown
@@ -39,7 +45,9 @@ aurora-raycast-plugin/
 ✅ **模板替换** - {{variable}} 语法替换变量生成最终提示词
 ✅ **多种输出方式** - Enter 键粘贴到前台应用，Cmd+Enter 复制到剪贴板
 ✅ **脚本执行（execScript）** - 将用户输入转为环境变量并执行外部脚本
-✅ **可配置目录** - 通过 Preferences 设置提示词存放目录
+✅ **多文件夹支持** - 支持创建多个 Processor，每个指向不同目录
+✅ **独立命令** - 每个 Processor 都是独立的 Raycast 命令，可单独设置快捷键
+✅ **LocalStorage 持久化** - 使用 LocalStorage 存储 Processor 配置
 ✅ **表单验证** - 支持必填项验证
 
 ## 技术栈
@@ -81,6 +89,7 @@ pnpm run fix-lint
 ✅ Markdown 配置读取功能完成
 ✅ 变量替换引擎实现完成
 ✅ 示例提示词配置完成
+✅ 多文件夹支持重构完成
 
 ## 核心概念
 
@@ -114,6 +123,66 @@ pnpm run fix-lint
 - 提交时将可见字段的值转换为环境变量：`id` → `ID`（大写）
 - multiselect → 逗号分隔字符串，checkbox → "true"/"false"
 - 使用 `execFile` 执行脚本（30s 超时），显示执行结果 Toast
+
+### Processor 配置 (ProcessorConfig)
+Processor 是管理特定目录的配置实体，包含：
+- **id**: 唯一标识符
+- **name**: 显示名称
+- **directory**: 目录路径
+- **icon**: 图标（可选）
+- **createdAt**: 创建时间戳
+
+## 命令说明
+
+### Manage Input Processors
+管理所有 Processor 配置：
+- 查看所有已创建的 Processor
+- 打开 Processor 的提示词列表
+- 复制 Processor ID
+- 删除 Processor
+
+### Create Input Processor
+创建新的 Processor：
+1. 输入名称（必填）
+2. 输入目录路径（必填）
+3. 选择图标（可选）
+4. 创建后 Processor ID 会自动复制到剪贴板
+5. 在 Raycast Preferences 中配置 `processor-N` 命令的 `processorId`
+
+### Input Processor 1-10
+10 个通用 Processor 命令：
+- 默认禁用，需要在 Preferences 中配置 `processorId` 后启用
+- 每个命令可单独设置快捷键
+- 运行时从 LocalStorage 读取对应的 Processor 配置
+- 显示该目录下的所有提示词
+
+## 使用流程
+
+1. **创建 Processor**
+   - 运行 "Create Input Processor" 命令
+   - 输入名称和目录路径
+   - 创建成功后，Processor ID 会自动复制到剪贴板
+
+2. **配置 Processor 命令**
+   - 打开 Raycast Preferences
+   - 找到 "Aurora Input Processor" 扩展
+   - 选择一个 "Input Processor N" 命令
+   - 在 "Processor ID" 字段粘贴 ID
+   - 启用该命令
+   - （可选）设置快捷键
+
+3. **使用 Processor**
+   - 运行配置好的 "Input Processor N" 命令
+   - 选择提示词
+   - 填写表单
+   - Enter 键粘贴或 Cmd+Enter 复制
+
+## 技术要点
+
+- 使用 `LocalStorage` API 持久化 Processor 配置
+- 使用 `Action.Push` 实现多层导航
+- Processor 命令通过命令级 preference 配置 `processorId`
+- 最多支持 10 个 Processor（可扩展）
 ```
 
 ## 注意事项
@@ -130,18 +199,10 @@ pnpm run fix-lint
 
 ## 提示词配置示例
 
-查看 `/Users/terrychen/Notes/Prompts/raycast/` 目录下的示例文件:
+查看 `/Users/terrychen/Notes/Prompts/raycast/` 目录下的示例文件：
 - `个人信息.md` - 基础的文本和选择类型
 - `工作信息.md` - 简单的信息收集
 - `偏好设置.md` - 包含 extraInputs 的复杂示例
-
-## 下一步开发
-
-1. 添加更多实用的提示词配置
-2. 支持提示词分组和搜索
-3. 实现提示词历史记录
-4. 添加提示词变量预览
-5. 准备发布材料
 
 ## 参考资料
 

@@ -1,12 +1,17 @@
 import { Action, ActionPanel, List, Icon } from "@raycast/api";
-import { loadPrompts } from "./config/prompts";
-import { PromptForm } from "./components/PromptForm";
+import { loadPromptsFromDirectory } from "../config/prompts";
+import { PromptForm } from "./PromptForm";
+import { ProcessorConfig } from "../types/processor";
 
-export default function Command() {
-  const prompts = loadPrompts();
+interface PromptListProps {
+  processor: ProcessorConfig;
+}
+
+export function PromptList({ processor }: PromptListProps) {
+  const prompts = loadPromptsFromDirectory(processor.directory);
 
   return (
-    <List>
+    <List navigationTitle={processor.name}>
       {prompts.map((prompt, index) => (
         <List.Item
           key={index}

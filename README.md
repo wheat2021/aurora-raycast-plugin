@@ -1,6 +1,6 @@
-# Aurora Raycast Plugin
+# Aurora Input Processor
 
-Aurora 的 Raycast 扩展插件 - 提示词管理器。
+Aurora Input Processor - 支持多文件夹的提示词处理器。
 
 ## 功能特性
 
@@ -13,7 +13,8 @@ Aurora 的 Raycast 扩展插件 - 提示词管理器。
 ✅ **脚本执行** - 支持执行自定义脚本处理用户输入
 ✅ **配置编辑** - 在 Raycast 界面直接编辑提示词配置
 ✅ **表单验证** - 支持必填项验证
-✅ **可配置目录** - 通过 Preferences 设置提示词存放目录
+✅ **多文件夹支持** - 支持创建多个 Processor，每个指向不同目录
+✅ **独立命令** - 每个 Processor 都是独立的 Raycast 命令，可单独设置快捷键
 
 ## 安装
 
@@ -39,9 +40,17 @@ pnpm lint
 
 ## 使用说明
 
+### 创建 Processor
+
+1. 运行 "Create Input Processor" 命令
+2. 输入名称和目录路径
+3. Processor ID 会自动复制到剪贴板
+4. 在 Raycast Preferences 中配置某个 "Input Processor N" 命令的 processorId
+5. 启用该命令并设置快捷键（可选）
+
 ### 添加新提示词
 
-1. 在配置的提示词目录下（默认 `~/Notes/Prompts/raycast/`）创建新的 Markdown 文件
+1. 在 Processor 对应的目录下创建新的 Markdown 文件
 2. 文件包含 YAML frontmatter（定义 title、inputs 等）和正文模板
 3. 重启插件或重新加载配置
 

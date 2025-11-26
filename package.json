@@ -1,27 +1,183 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "aurora",
-  "title": "Aurora",
-  "description": "Aurora Raycast Plugin",
+  "name": "aurora-input-processor",
+  "title": "Aurora Input Processor",
+  "description": "Aurora Input Processor - Manage and execute prompts from multiple directories",
   "icon": "icon.png",
   "author": "wheat2021",
   "license": "MIT",
   "commands": [
     {
-      "name": "index",
-      "title": "Aurora",
-      "description": "Main Aurora command",
+      "name": "manage-processors",
+      "title": "Manage Input Processors",
+      "description": "Manage your input processors",
       "mode": "view"
-    }
-  ],
-  "preferences": [
+    },
     {
-      "name": "promptsDirectory",
-      "type": "textfield",
-      "required": true,
-      "title": "提示词目录",
-      "description": "存放提示词 Markdown 文件的目录路径",
-      "default": "/Users/terrychen/Notes/Prompts/raycast"
+      "name": "create-processor",
+      "title": "Create Input Processor",
+      "description": "Create a new input processor",
+      "mode": "view"
+    },
+    {
+      "name": "processor-1",
+      "title": "Input Processor 1",
+      "description": "Input Processor 1",
+      "mode": "view",
+      "disabledByDefault": true,
+      "preferences": [
+        {
+          "name": "processorId",
+          "type": "textfield",
+          "required": false,
+          "title": "Processor ID",
+          "description": "The ID of the processor to use"
+        }
+      ]
+    },
+    {
+      "name": "processor-2",
+      "title": "Input Processor 2",
+      "description": "Input Processor 2",
+      "mode": "view",
+      "disabledByDefault": true,
+      "preferences": [
+        {
+          "name": "processorId",
+          "type": "textfield",
+          "required": false,
+          "title": "Processor ID",
+          "description": "The ID of the processor to use"
+        }
+      ]
+    },
+    {
+      "name": "processor-3",
+      "title": "Input Processor 3",
+      "description": "Input Processor 3",
+      "mode": "view",
+      "disabledByDefault": true,
+      "preferences": [
+        {
+          "name": "processorId",
+          "type": "textfield",
+          "required": false,
+          "title": "Processor ID",
+          "description": "The ID of the processor to use"
+        }
+      ]
+    },
+    {
+      "name": "processor-4",
+      "title": "Input Processor 4",
+      "description": "Input Processor 4",
+      "mode": "view",
+      "disabledByDefault": true,
+      "preferences": [
+        {
+          "name": "processorId",
+          "type": "textfield",
+          "required": false,
+          "title": "Processor ID",
+          "description": "The ID of the processor to use"
+        }
+      ]
+    },
+    {
+      "name": "processor-5",
+      "title": "Input Processor 5",
+      "description": "Input Processor 5",
+      "mode": "view",
+      "disabledByDefault": true,
+      "preferences": [
+        {
+          "name": "processorId",
+          "type": "textfield",
+          "required": false,
+          "title": "Processor ID",
+          "description": "The ID of the processor to use"
+        }
+      ]
+    },
+    {
+      "name": "processor-6",
+      "title": "Input Processor 6",
+      "description": "Input Processor 6",
+      "mode": "view",
+      "disabledByDefault": true,
+      "preferences": [
+        {
+          "name": "processorId",
+          "type": "textfield",
+          "required": false,
+          "title": "Processor ID",
+          "description": "The ID of the processor to use"
+        }
+      ]
+    },
+    {
+      "name": "processor-7",
+      "title": "Input Processor 7",
+      "description": "Input Processor 7",
+      "mode": "view",
+      "disabledByDefault": true,
+      "preferences": [
+        {
+          "name": "processorId",
+          "type": "textfield",
+          "required": false,
+          "title": "Processor ID",
+          "description": "The ID of the processor to use"
+        }
+      ]
+    },
+    {
+      "name": "processor-8",
+      "title": "Input Processor 8",
+      "description": "Input Processor 8",
+      "mode": "view",
+      "disabledByDefault": true,
+      "preferences": [
+        {
+          "name": "processorId",
+          "type": "textfield",
+          "required": false,
+          "title": "Processor ID",
+          "description": "The ID of the processor to use"
+        }
+      ]
+    },
+    {
+      "name": "processor-9",
+      "title": "Input Processor 9",
+      "description": "Input Processor 9",
+      "mode": "view",
+      "disabledByDefault": true,
+      "preferences": [
+        {
+          "name": "processorId",
+          "type": "textfield",
+          "required": false,
+          "title": "Processor ID",
+          "description": "The ID of the processor to use"
+        }
+      ]
+    },
+    {
+      "name": "processor-10",
+      "title": "Input Processor 10",
+      "description": "Input Processor 10",
+      "mode": "view",
+      "disabledByDefault": true,
+      "preferences": [
+        {
+          "name": "processorId",
+          "type": "textfield",
+          "required": false,
+          "title": "Processor ID",
+          "description": "The ID of the processor to use"
+        }
+      ]
     }
   ],
   "dependencies": {

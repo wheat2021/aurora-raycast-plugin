@@ -6,6 +6,7 @@ import {
   Toast,
   Clipboard,
   Icon,
+  popToRoot,
 } from "@raycast/api";
 import { useState, useEffect } from "react";
 import { PromptConfig, PromptValues, PromptInput } from "../types/prompt";
@@ -129,6 +130,9 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         if (stderr) {
           console.warn("Script stderr:", stderr);
         }
+
+        // 返回文件列表
+        await popToRoot();
       } catch (error) {
         toast.style = Toast.Style.Failure;
         toast.title = "脚本执行失败";
@@ -145,6 +149,9 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
       style: Toast.Style.Success,
       title: "已粘贴到当前应用",
     });
+
+    // 返回文件列表
+    await popToRoot();
   };
 
   // Cmd+Enter 快捷键触发：验证表单 → 根据是否有 execScript 决定执行脚本或复制内容
@@ -178,6 +185,9 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         if (stderr) {
           console.warn("Script stderr:", stderr);
         }
+
+        // 返回文件列表
+        await popToRoot();
       } catch (error) {
         toast.style = Toast.Style.Failure;
         toast.title = "脚本执行失败";
@@ -194,6 +204,9 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
       style: Toast.Style.Success,
       title: "已复制到剪贴板",
     });
+
+    // 返回文件列表
+    await popToRoot();
   };
 
   // 根据当前表单值和 extraInputs 配置，实时计算应该显示的字段列表（某些字段仅在特定选项被选中时显示）

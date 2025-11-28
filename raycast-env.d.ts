@@ -64,8 +64,8 @@ declare namespace Preferences {
   /** Processor ID - The ID of the processor to use */
   "processorId"?: string
 }
-  /** Preferences accessible in the `processor-10` command */
-  export type Processor10 = ExtensionPreferences & {
+  /** Preferences accessible in the `ask-ai` command */
+  export type AskAi = ExtensionPreferences & {
   /** Use App When Available - Use native app instead of web browser when available */
   "useAppWhenAvailable": boolean
 }
@@ -96,8 +96,8 @@ declare namespace Arguments {
   export type Processor8 = {}
   /** Arguments passed to the `processor-9` command */
   export type Processor9 = {}
-  /** Arguments passed to the `processor-10` command */
-  export type Processor10 = {
+  /** Arguments passed to the `ask-ai` command */
+  export type AskAi = {
   /** Ask anything... */
   "query": string,
   /** AI provider ID */

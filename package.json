@@ -170,7 +170,7 @@
       ]
     },
     {
-      "name": "processor-10",
+      "name": "ask-ai",
       "title": "Ask AI",
       "description": "Ask questions to various AI assistants (Perplexity, ChatGPT, Claude, etc.)",
       "mode": "view",

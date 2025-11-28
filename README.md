@@ -293,7 +293,7 @@ Processor 配置使用 Raycast 的 LocalStorage API 持久化存储，包含以�
 
 ### 命令槽位机制
 
-插件预定义了 10 个通用命令（processor-1 到 processor-10），每个命令：
+插件预定义了 9 个通用命令（processor-1 到 processor-9），每个命令：
 - 默认禁用（`disabledByDefault: true`）
 - 有独立的命令级 preference: `processorId`
 - 运行时从 LocalStorage 读取对应的 Processor 配置

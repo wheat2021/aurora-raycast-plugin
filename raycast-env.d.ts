@@ -17,6 +17,8 @@ declare namespace Preferences {
   export type ManageProcessors = ExtensionPreferences & {}
   /** Preferences accessible in the `create-processor` command */
   export type CreateProcessor = ExtensionPreferences & {}
+  /** Preferences accessible in the `manage-ai` command */
+  export type ManageAi = ExtensionPreferences & {}
   /** Preferences accessible in the `processor-1` command */
   export type Processor1 = ExtensionPreferences & {
   /** Processor ID - The ID of the processor to use */
@@ -64,8 +66,8 @@ declare namespace Preferences {
 }
   /** Preferences accessible in the `processor-10` command */
   export type Processor10 = ExtensionPreferences & {
-  /** Processor ID - The ID of the processor to use */
-  "processorId"?: string
+  /** Use App When Available - Use native app instead of web browser when available */
+  "useAppWhenAvailable": boolean
 }
 }
 
@@ -74,6 +76,8 @@ declare namespace Arguments {
   export type ManageProcessors = {}
   /** Arguments passed to the `create-processor` command */
   export type CreateProcessor = {}
+  /** Arguments passed to the `manage-ai` command */
+  export type ManageAi = {}
   /** Arguments passed to the `processor-1` command */
   export type Processor1 = {}
   /** Arguments passed to the `processor-2` command */
@@ -93,6 +97,11 @@ declare namespace Arguments {
   /** Arguments passed to the `processor-9` command */
   export type Processor9 = {}
   /** Arguments passed to the `processor-10` command */
-  export type Processor10 = {}
+  export type Processor10 = {
+  /** Ask anything... */
+  "query": string,
+  /** AI provider ID */
+  "provider": string
+}
 }
 

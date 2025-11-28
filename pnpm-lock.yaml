@@ -9,18 +9,18 @@ importers:
   .:
     dependencies:
       '@raycast/api':
-        specifier: ^1.103.7
-        version: 1.103.7(@types/node@22.13.10)(@types/react@19.0.10)
+        specifier: ^1.103.8
+        version: 1.103.8(@types/node@22.13.10)(@types/react@19.0.10)
       '@raycast/utils':
         specifier: ^2.2.2
-        version: 2.2.2(@raycast/api@1.103.7(@types/node@22.13.10)(@types/react@19.0.10))(react@19.0.0)
+        version: 2.2.2(@raycast/api@1.103.8(@types/node@22.13.10)(@types/react@19.0.10))(react@19.0.0)
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
     devDependencies:
       '@raycast/eslint-config':
         specifier: ^1.0.11
-        version: 1.0.11(eslint@8.57.1)(prettier@3.6.2)(typescript@5.9.3)
+        version: 1.0.11(eslint@8.57.1)(prettier@3.7.1)(typescript@5.9.3)
       '@types/node':
         specifier: 22.13.10
         version: 22.13.10
@@ -31,10 +31,10 @@ importers:
         specifier: ^8.57.1
         version: 8.57.1
       prettier:
-        specifier: ^3.4.2
-        version: 3.6.2
+        specifier: ^3.7.1
+        version: 3.7.1
       typescript:
-        specifier: ^5.7.2
+        specifier: ^5.9.3
         version: 5.9.3
 
 packages:
@@ -388,8 +388,8 @@ packages:
     resolution: {integrity: sha512-2bQieTGI9XNFe9hKmXQjJmHV5rZw+yn7Rud1+C5uLEo8GaT89KZbiLTJgL35tGILahy/cB6+WAs812wjw7TK6w==}
     engines: {node: '>=18.0.0'}
 
-  '@raycast/api@1.103.7':
-    resolution: {integrity: sha512-BpysnhQIMGw6t2RsH+ZpNSd5WpvV3ScOP/HI8d/rRr3ZQ+tRv0TFThkUoJVEiPxkEmoYoe9RKwbdpJyookSv7Q==}
+  '@raycast/api@1.103.8':
+    resolution: {integrity: sha512-nD9cTU/YHo0GkEiyIg48w7LkFd1WvKfBGlXZL3rMhpJQuy5vRlUZfQhS7zn5xgVsd4OMOTXboYdhIF/U81eUeQ==}
     engines: {node: '>=22.14.0'}
     hasBin: true
     peerDependencies:
@@ -1003,8 +1003,8 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
-  prettier@3.6.2:
-    resolution: {integrity: sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==}
+  prettier@3.7.1:
+    resolution: {integrity: sha512-RWKXE4qB3u5Z6yz7omJkjWwmTfLdcbv44jUVHC5NpfXwFGzvpQM798FGv/6WNK879tc+Cn0AAyherCl1KjbyZQ==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -1469,7 +1469,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@raycast/api@1.103.7(@types/node@22.13.10)(@types/react@19.0.10)':
+  '@raycast/api@1.103.8(@types/node@22.13.10)(@types/react@19.0.10)':
     dependencies:
       '@oclif/core': 4.8.0
       '@oclif/plugin-autocomplete': 3.2.39
@@ -1483,7 +1483,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@raycast/eslint-config@1.0.11(eslint@8.57.1)(prettier@3.6.2)(typescript@5.9.3)':
+  '@raycast/eslint-config@1.0.11(eslint@8.57.1)(prettier@3.7.1)(typescript@5.9.3)':
     dependencies:
       '@raycast/eslint-plugin': 1.0.16(eslint@8.57.1)(typescript@5.9.3)
       '@rushstack/eslint-patch': 1.15.0
@@ -1491,7 +1491,7 @@ snapshots:
       '@typescript-eslint/parser': 6.21.0(eslint@8.57.1)(typescript@5.9.3)
       eslint: 8.57.1
       eslint-config-prettier: 9.1.2(eslint@8.57.1)
-      prettier: 3.6.2
+      prettier: 3.7.1
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
@@ -1504,9 +1504,9 @@ snapshots:
       - supports-color
       - typescript
 
-  '@raycast/utils@2.2.2(@raycast/api@1.103.7(@types/node@22.13.10)(@types/react@19.0.10))(react@19.0.0)':
+  '@raycast/utils@2.2.2(@raycast/api@1.103.8(@types/node@22.13.10)(@types/react@19.0.10))(react@19.0.0)':
     dependencies:
-      '@raycast/api': 1.103.7(@types/node@22.13.10)(@types/react@19.0.10)
+      '@raycast/api': 1.103.8(@types/node@22.13.10)(@types/react@19.0.10)
       dequal: 2.0.3
     optionalDependencies:
       react: 19.0.0
@@ -2129,7 +2129,7 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier@3.6.2: {}
+  prettier@3.7.1: {}
 
   punycode@2.3.1: {}
 

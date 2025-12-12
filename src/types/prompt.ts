@@ -6,7 +6,8 @@ export type PromptInputType =
   | "textarea"
   | "select"
   | "multiselect"
-  | "checkbox";
+  | "checkbox"
+  | "selectInFolder";
 
 /**
  * 选项配置（用于 select 和 multiselect）
@@ -30,6 +31,7 @@ export interface PromptInput {
   description?: string;
   isExtraInput?: boolean; // 是否为条件显示字段
   options?: PromptOption[]; // 用于 select/multiselect
+  folder?: string; // 用于 selectInFolder，指定读取的目录路径
 }
 
 /**

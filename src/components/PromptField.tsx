@@ -1,5 +1,6 @@
 import { Form } from "@raycast/api";
 import { PromptInput } from "../types/prompt";
+import { readFolderValues } from "../utils/folderReader";
 
 interface PromptFieldProps {
   config: PromptInput;
@@ -78,6 +79,29 @@ export function PromptField({ config, onChange, error }: PromptFieldProps) {
           ))}
         </Form.Dropdown>
       );
+
+    case "selectInFolder": {
+      // 从 folder 路径读取文件和目录
+      const folderOptions = config.folder ? readFolderValues(config.folder) : [];
+      return (
+        <Form.Dropdown
+          id={config.id}
+          title={requiredLabel}
+          info={description}
+          defaultValue={defaultValue as string}
+          error={error}
+          onChange={(value) => onChange(config.id, value)}
+        >
+          {folderOptions.map((option) => (
+            <Form.Dropdown.Item
+              key={option.value}
+              value={option.value}
+              title={option.display || option.value}
+            />
+          ))}
+        </Form.Dropdown>
+      );
+    }
 
     case "multiselect":
       return (

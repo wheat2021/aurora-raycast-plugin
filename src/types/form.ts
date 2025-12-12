@@ -4,6 +4,7 @@ export enum InputType {
   SingleChoice = "SingleChoice",
   MultiChoice = "MultiChoice",
   BooleanChoice = "BooleanChoice",
+  SingleChoiceInFolder = "SingleChoiceInFolder",
 }
 
 export interface InputValue {
@@ -28,6 +29,7 @@ export interface InputConfig {
   values?: InputValue[];
   singleLine?: boolean;
   isExtraInput?: boolean;
+  folder?: string;
 }
 
 export interface FormConfig {

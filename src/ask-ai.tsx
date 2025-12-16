@@ -29,7 +29,9 @@ interface Arguments {
   provider?: string;
 }
 
-export default function Command(props: LaunchProps<{ draftValues: Values; arguments: Arguments }>) {
+export default function Command(
+  props: LaunchProps<{ draftValues: Values; arguments: Arguments }>,
+) {
   const [providers, setProviders] = useState<AIProvider[]>([]);
   const [defaultProviderId, setDefaultProviderId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +45,9 @@ export default function Command(props: LaunchProps<{ draftValues: Values; argume
     try {
       const config = await getAIConfig();
       setProviders(config.providers);
-      setDefaultProviderId(config.defaultProviderId || config.providers[0]?.id || "");
+      setDefaultProviderId(
+        config.defaultProviderId || config.providers[0]?.id || "",
+      );
     } catch (error) {
       showToast({
         style: Toast.Style.Failure,
@@ -68,10 +72,15 @@ export default function Command(props: LaunchProps<{ draftValues: Values; argume
 
       // Determine which URL to use
       const useApp = preferences.useAppWhenAvailable && selectedProvider.appUrl;
-      const urlTemplate = useApp ? selectedProvider.appUrl! : selectedProvider.url;
+      const urlTemplate = useApp
+        ? selectedProvider.appUrl!
+        : selectedProvider.url;
 
       // Replace {query} placeholder with actual query (URL encoded)
-      const finalUrl = urlTemplate.replace("{query}", encodeURIComponent(query));
+      const finalUrl = urlTemplate.replace(
+        "{query}",
+        encodeURIComponent(query),
+      );
 
       try {
         await open(finalUrl);
@@ -85,8 +94,15 @@ export default function Command(props: LaunchProps<{ draftValues: Values; argume
       }
     },
     initialValues: {
-      query: props.draftValues?.query ?? props.fallbackText ?? props.arguments?.query ?? "",
-      provider: props.draftValues?.provider ?? props.arguments?.provider ?? defaultProviderId,
+      query:
+        props.draftValues?.query ??
+        props.fallbackText ??
+        props.arguments?.query ??
+        "",
+      provider:
+        props.draftValues?.provider ??
+        props.arguments?.provider ??
+        defaultProviderId,
     },
     validation: {
       query: (value) => {
@@ -103,7 +119,11 @@ export default function Command(props: LaunchProps<{ draftValues: Values; argume
   });
 
   // Auto-submit if both query and provider are provided
-  if (props.arguments?.query && (props.arguments?.provider || defaultProviderId) && !isLoading) {
+  if (
+    props.arguments?.query &&
+    (props.arguments?.provider || defaultProviderId) &&
+    !isLoading
+  ) {
     handleSubmit({
       query: props.arguments.query,
       provider: props.arguments.provider || defaultProviderId,
@@ -126,7 +146,11 @@ export default function Command(props: LaunchProps<{ draftValues: Values; argume
       enableDrafts
       actions={
         <ActionPanel>
-          <Action.SubmitForm title="Ask AI" icon={Icon.Message} onSubmit={handleSubmit} />
+          <Action.SubmitForm
+            title="Ask AI"
+            icon={Icon.Message}
+            onSubmit={handleSubmit}
+          />
           <Action.Push
             title="管理 AI 配置"
             icon={Icon.Gear}
@@ -146,7 +170,11 @@ export default function Command(props: LaunchProps<{ draftValues: Values; argume
           />
         ))}
       </Form.Dropdown>
-      <Form.TextArea title="Ask Anything" placeholder="输入你的问题..." {...itemProps.query} />
+      <Form.TextArea
+        title="Ask Anything"
+        placeholder="输入你的问题..."
+        {...itemProps.query}
+      />
       <Form.Description text="💡 提示：可以在下方管理 AI 配置中添加更多 AI 工具" />
     </Form>
   );
@@ -255,7 +283,11 @@ function AddAIView({ onAdd }: { onAdd: () => Promise<void> }) {
     <Form
       actions={
         <ActionPanel>
-          <Action.SubmitForm title="添加" icon={Icon.Plus} onSubmit={handleSubmit} />
+          <Action.SubmitForm
+            title="添加"
+            icon={Icon.Plus}
+            onSubmit={handleSubmit}
+          />
         </ActionPanel>
       }
     >
@@ -265,7 +297,11 @@ function AddAIView({ onAdd }: { onAdd: () => Promise<void> }) {
         info="唯一标识符，使用小写字母和连字符"
         {...itemProps.id}
       />
-      <Form.TextField title="名称" placeholder="例如: My AI" {...itemProps.name} />
+      <Form.TextField
+        title="名称"
+        placeholder="例如: My AI"
+        {...itemProps.name}
+      />
       <Form.TextField
         title="图标"
         placeholder="例如: 🤖"

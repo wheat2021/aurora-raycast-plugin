@@ -74,7 +74,9 @@ export async function saveAIConfig(config: AIConfig): Promise<void> {
   await LocalStorage.setItem(AI_CONFIG_KEY, JSON.stringify(config));
 }
 
-export async function getAIProvider(id: string): Promise<AIProvider | undefined> {
+export async function getAIProvider(
+  id: string,
+): Promise<AIProvider | undefined> {
   const config = await getAIConfig();
   return config.providers.find((p) => p.id === id);
 }

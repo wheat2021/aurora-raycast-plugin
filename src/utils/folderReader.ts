@@ -14,7 +14,10 @@ export interface FolderReaderOptions {
  * @param options 过滤选项
  * @returns InputValue 数组，display 为文件/目录名，value 为完整路径
  */
-export function readFolderValues(folderPath: string, options?: FolderReaderOptions): InputValue[] {
+export function readFolderValues(
+  folderPath: string,
+  options?: FolderReaderOptions,
+): InputValue[] {
   try {
     // 检查路径是否存在
     if (!fs.existsSync(folderPath)) {
@@ -34,8 +37,12 @@ export function readFolderValues(folderPath: string, options?: FolderReaderOptio
 
     // 解析选项
     const valueItemType = options?.valueItemType ?? 0;
-    const includeRegex = options?.regIncludeFilter ? new RegExp(options.regIncludeFilter) : null;
-    const excludeRegex = options?.regExcludeFilter ? new RegExp(options.regExcludeFilter) : null;
+    const includeRegex = options?.regIncludeFilter
+      ? new RegExp(options.regIncludeFilter)
+      : null;
+    const excludeRegex = options?.regExcludeFilter
+      ? new RegExp(options.regExcludeFilter)
+      : null;
 
     // 构造 InputValue 数组
     const values: InputValue[] = entries

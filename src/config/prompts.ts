@@ -14,7 +14,7 @@ import { PromptConfig, PromptInput } from "../types/prompt";
 function resolveObsidianReferences(
   content: string,
   rulesDir: string,
-  processedFiles: Set<string> = new Set()
+  processedFiles: Set<string> = new Set(),
 ): string {
   // 匹配 ![[filename]] 格式的引用
   const referencePattern = /!\[\[([^\]]+)\]\]/g;
@@ -48,11 +48,14 @@ function resolveObsidianReferences(
       const resolvedReference = resolveObsidianReferences(
         referencedContent,
         rulesDir,
-        newProcessedFiles
+        newProcessedFiles,
       );
 
       // 替换引用为实际内容
-      resolvedContent = resolvedContent.replace(referenceName, resolvedReference);
+      resolvedContent = resolvedContent.replace(
+        referenceName,
+        resolvedReference,
+      );
     } catch (error) {
       console.error(`Error reading referenced file ${filePath}:`, error);
     }
@@ -95,7 +98,10 @@ export function loadPromptsFromDirectory(directory: string): PromptConfig[] {
       // 解析 Obsidian 引用
       // 假设 rules 目录在提示词目录的父目录下
       const rulesDir = path.join(path.dirname(promptsDir), "rules");
-      const resolvedContent = resolveObsidianReferences(parsed.content.trim(), rulesDir);
+      const resolvedContent = resolveObsidianReferences(
+        parsed.content.trim(),
+        rulesDir,
+      );
 
       const promptConfig: PromptConfig = {
         title: parsed.data.title,

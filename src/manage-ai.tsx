@@ -103,7 +103,9 @@ export default function Command() {
               subtitle={provider.description}
               icon={provider.icon || "🤖"}
               accessories={[
-                ...(isDefault ? [{ tag: { value: "默认", color: Color.Green } }] : []),
+                ...(isDefault
+                  ? [{ tag: { value: "默认", color: Color.Green } }]
+                  : []),
                 { text: provider.id },
               ]}
               actions={
@@ -112,7 +114,12 @@ export default function Command() {
                     <Action.Push
                       title="编辑"
                       icon={Icon.Pencil}
-                      target={<EditAIView provider={provider} onUpdate={loadProviders} />}
+                      target={
+                        <EditAIView
+                          provider={provider}
+                          onUpdate={loadProviders}
+                        />
+                      }
                     />
                     {!isDefault && (
                       <Action
@@ -223,7 +230,11 @@ function AddAIView({ onAdd }: { onAdd: () => Promise<void> }) {
     <Form
       actions={
         <ActionPanel>
-          <Action.SubmitForm title="添加" icon={Icon.Plus} onSubmit={handleSubmit} />
+          <Action.SubmitForm
+            title="添加"
+            icon={Icon.Plus}
+            onSubmit={handleSubmit}
+          />
           <ActionPanel.Submenu title="使用预设" icon={Icon.Layers}>
             {DEFAULT_AI_PROVIDERS.map((preset) => (
               <Action
@@ -243,7 +254,11 @@ function AddAIView({ onAdd }: { onAdd: () => Promise<void> }) {
         info="唯一标识符，只能使用小写字母、数字和连字符"
         {...itemProps.id}
       />
-      <Form.TextField title="名称" placeholder="例如: My AI" {...itemProps.name} />
+      <Form.TextField
+        title="名称"
+        placeholder="例如: My AI"
+        {...itemProps.name}
+      />
       <Form.TextField
         title="图标"
         placeholder="例如: 🤖"
@@ -273,7 +288,13 @@ function AddAIView({ onAdd }: { onAdd: () => Promise<void> }) {
 }
 
 // Edit AI View
-function EditAIView({ provider, onUpdate }: { provider: AIProvider; onUpdate: () => Promise<void> }) {
+function EditAIView({
+  provider,
+  onUpdate,
+}: {
+  provider: AIProvider;
+  onUpdate: () => Promise<void>;
+}) {
   const { handleSubmit, itemProps } = useForm<AIProvider>({
     async onSubmit(values) {
       try {
@@ -321,7 +342,11 @@ function EditAIView({ provider, onUpdate }: { provider: AIProvider; onUpdate: ()
     <Form
       actions={
         <ActionPanel>
-          <Action.SubmitForm title="保存" icon={Icon.Check} onSubmit={handleSubmit} />
+          <Action.SubmitForm
+            title="保存"
+            icon={Icon.Check}
+            onSubmit={handleSubmit}
+          />
         </ActionPanel>
       }
     >
@@ -332,7 +357,11 @@ function EditAIView({ provider, onUpdate }: { provider: AIProvider; onUpdate: ()
         info="唯一标识符，只能使用小写字母、数字和连字符"
         {...itemProps.id}
       />
-      <Form.TextField title="名称" placeholder="例如: My AI" {...itemProps.name} />
+      <Form.TextField
+        title="名称"
+        placeholder="例如: My AI"
+        {...itemProps.name}
+      />
       <Form.TextField
         title="图标"
         placeholder="例如: 🤖"

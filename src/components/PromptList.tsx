@@ -7,6 +7,22 @@ interface PromptListProps {
   processor: ProcessorConfig;
 }
 
+/**
+ * URL 编码路径，保留 / 和 : 字符（与 Python urllib.parse.quote 的 safe='/:' 行为一致）
+ */
+function encodePathForObsidian(filePath: string): string {
+  return filePath
+    .split("/")
+    .map((segment) => {
+      // 对每个路径段进行编码，但保留 :
+      return segment
+        .split(":")
+        .map((part) => encodeURIComponent(part))
+        .join(":");
+    })
+    .join("/");
+}
+
 export function PromptList({ processor }: PromptListProps) {
   const prompts = loadPromptsFromDirectory(processor.directory);
 
@@ -26,6 +42,14 @@ export function PromptList({ processor }: PromptListProps) {
                 icon={Icon.Pencil}
                 target={<PromptForm config={prompt} />}
               />
+              {prompt.filePath && (
+                <Action.Open
+                  title="在 Obsidian 中打开"
+                  icon={Icon.Document}
+                  target={`obsidian://open?path=${encodePathForObsidian(prompt.filePath)}`}
+                  shortcut={{ modifiers: ["cmd"], key: "l" }}
+                />
+              )}
             </ActionPanel>
           }
         />

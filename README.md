@@ -6,7 +6,8 @@ Aurora Input Processor - 支持多文件夹的提示词处理器。
 
 ✅ **Markdown 配置** - 使用 Markdown 文件（YAML frontmatter + 正文）定义提示词
 ✅ **动态变量输入** - 根据 frontmatter 中定义的变量生成表单
-✅ **多种输入类型** - 支持 text、textarea、select、multiselect、checkbox
+✅ **多种输入类型** - 支持 text、textarea、select、multiselect、checkbox、selectInFolder
+✅ **目录选择器** - selectInFolder 支持从文件系统读取文件/目录，支持类型过滤和正则表达式过滤
 ✅ **条件字段** - 支持 extraInputs 机制，根据选项动态显示字段
 ✅ **模板替换** - {{variable}} 语法替换变量生成最终提示词
 ✅ **多种输出方式** - Enter 键粘贴到前台应用，Cmd+Enter 复制到剪贴板
@@ -148,6 +149,75 @@ inputs:
 - `select`: 单选下拉框 (Form.Dropdown)
 - `multiselect`: 多选标签选择器 (Form.TagPicker)
 - `checkbox`: 复选框 (Form.Checkbox)
+- `selectInFolder`: 从指定目录读取文件/目录作为选项 (Form.Dropdown)
+
+#### selectInFolder 详细说明
+
+`selectInFolder` 类型允许从文件系统目录动态读取文件和子目录作为下拉选项。支持多种过滤参数：
+
+**基础用法**：
+```yaml
+- id: selected_file
+  label: 选择文件
+  type: selectInFolder
+  folder: /path/to/directory
+  required: true
+```
+
+**可选参数**：
+
+1. **valueItemType** - 控制显示的项目类型
+   - `0` (默认): 显示目录和文件
+   - `1`: 仅显示目录
+   - `2`: 仅显示文件
+
+2. **regIncludeFilter** - 正则表达式包含过滤器
+   - 只显示匹配正则表达式的项目
+   - 例如：`\.md$` 只显示 Markdown 文件
+
+3. **regExcludeFilter** - 正则表达式排除过滤器
+   - 隐藏匹配正则表达式的项目
+   - 例如：`^temp|\.tmp$` 排除临时文件
+
+**高级示例**：
+```yaml
+# 仅显示 Markdown 文件
+- id: md_file
+  label: 选择 Markdown 文件
+  type: selectInFolder
+  folder: /Users/yourname/Notes
+  valueItemType: 2
+  regIncludeFilter: \.md$
+
+# 显示所有目录，但排除隐藏和临时目录
+- id: project_dir
+  label: 选择项目目录
+  type: selectInFolder
+  folder: /Users/yourname/Projects
+  valueItemType: 1
+  regExcludeFilter: ^(\.|\.|temp|tmp)
+
+# 组合使用：只显示特定模式的 Markdown 文件
+- id: work_doc
+  label: 选择工作文档
+  type: selectInFolder
+  folder: /Users/yourname/Documents
+  valueItemType: 2
+  regIncludeFilter: ^(工作|项目).*\.md$
+  regExcludeFilter: 草稿|draft
+```
+
+**过滤器执行顺序**：
+1. 首先应用 `valueItemType` 过滤（文件/目录类型）
+2. 然后应用 `regIncludeFilter`（如果设置）
+3. 最后应用 `regExcludeFilter`（如果设置）
+4. 自动过滤隐藏文件（以 `.` 开头）
+5. 按名称字母顺序排序
+
+**注意事项**：
+- 选项的 `display` 是文件/目录名
+- 选项的 `value` 是完整路径
+- 正则表达式匹配的是文件/目录名，不是完整路径
 
 ### 条件字段 (Extra Inputs)
 

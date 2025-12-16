@@ -30,6 +30,9 @@ export interface InputConfig {
   singleLine?: boolean;
   isExtraInput?: boolean;
   folder?: string;
+  valueItemType?: 0 | 1 | 2; // 0=目录和文件(默认), 1=仅目录, 2=仅文件
+  regIncludeFilter?: string; // 正则表达式包含过滤器
+  regExcludeFilter?: string; // 正则表达式排除过滤器
 }
 
 export interface FormConfig {

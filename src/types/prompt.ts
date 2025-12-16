@@ -32,6 +32,9 @@ export interface PromptInput {
   isExtraInput?: boolean; // 是否为条件显示字段
   options?: PromptOption[]; // 用于 select/multiselect
   folder?: string; // 用于 selectInFolder，指定读取的目录路径
+  valueItemType?: 0 | 1 | 2; // 用于 selectInFolder: 0=目录和文件(默认), 1=仅目录, 2=仅文件
+  regIncludeFilter?: string; // 用于 selectInFolder，正则表达式包含过滤器
+  regExcludeFilter?: string; // 用于 selectInFolder，正则表达式排除过滤器
 }
 
 /**

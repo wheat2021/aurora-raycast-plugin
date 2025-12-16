@@ -13,56 +13,70 @@ type ExtensionPreferences = {}
 declare type Preferences = ExtensionPreferences
 
 declare namespace Preferences {
-  /** Preferences accessible in the `manage-processors` command */
-  export type ManageProcessors = ExtensionPreferences & {}
-  /** Preferences accessible in the `create-processor` command */
-  export type CreateProcessor = ExtensionPreferences & {}
   /** Preferences accessible in the `manage-ai` command */
   export type ManageAi = ExtensionPreferences & {}
   /** Preferences accessible in the `processor-1` command */
   export type Processor1 = ExtensionPreferences & {
-  /** Processor ID - The ID of the processor to use */
-  "processorId"?: string
+  /** Processor Name - Display name for this processor */
+  "name"?: string,
+  /** Prompts Directory - Absolute path to the directory containing prompt files */
+  "directory": string
 }
   /** Preferences accessible in the `processor-2` command */
   export type Processor2 = ExtensionPreferences & {
-  /** Processor ID - The ID of the processor to use */
-  "processorId"?: string
+  /** Processor Name - Display name for this processor */
+  "name"?: string,
+  /** Prompts Directory - Absolute path to the directory containing prompt files */
+  "directory": string
 }
   /** Preferences accessible in the `processor-3` command */
   export type Processor3 = ExtensionPreferences & {
-  /** Processor ID - The ID of the processor to use */
-  "processorId"?: string
+  /** Processor Name - Display name for this processor */
+  "name"?: string,
+  /** Prompts Directory - Absolute path to the directory containing prompt files */
+  "directory": string
 }
   /** Preferences accessible in the `processor-4` command */
   export type Processor4 = ExtensionPreferences & {
-  /** Processor ID - The ID of the processor to use */
-  "processorId"?: string
+  /** Processor Name - Display name for this processor */
+  "name"?: string,
+  /** Prompts Directory - Absolute path to the directory containing prompt files */
+  "directory": string
 }
   /** Preferences accessible in the `processor-5` command */
   export type Processor5 = ExtensionPreferences & {
-  /** Processor ID - The ID of the processor to use */
-  "processorId"?: string
+  /** Processor Name - Display name for this processor */
+  "name"?: string,
+  /** Prompts Directory - Absolute path to the directory containing prompt files */
+  "directory": string
 }
   /** Preferences accessible in the `processor-6` command */
   export type Processor6 = ExtensionPreferences & {
-  /** Processor ID - The ID of the processor to use */
-  "processorId"?: string
+  /** Processor Name - Display name for this processor */
+  "name"?: string,
+  /** Prompts Directory - Absolute path to the directory containing prompt files */
+  "directory": string
 }
   /** Preferences accessible in the `processor-7` command */
   export type Processor7 = ExtensionPreferences & {
-  /** Processor ID - The ID of the processor to use */
-  "processorId"?: string
+  /** Processor Name - Display name for this processor */
+  "name"?: string,
+  /** Prompts Directory - Absolute path to the directory containing prompt files */
+  "directory": string
 }
   /** Preferences accessible in the `processor-8` command */
   export type Processor8 = ExtensionPreferences & {
-  /** Processor ID - The ID of the processor to use */
-  "processorId"?: string
+  /** Processor Name - Display name for this processor */
+  "name"?: string,
+  /** Prompts Directory - Absolute path to the directory containing prompt files */
+  "directory": string
 }
   /** Preferences accessible in the `processor-9` command */
   export type Processor9 = ExtensionPreferences & {
-  /** Processor ID - The ID of the processor to use */
-  "processorId"?: string
+  /** Processor Name - Display name for this processor */
+  "name"?: string,
+  /** Prompts Directory - Absolute path to the directory containing prompt files */
+  "directory": string
 }
   /** Preferences accessible in the `ask-ai` command */
   export type AskAi = ExtensionPreferences & {
@@ -72,10 +86,6 @@ declare namespace Preferences {
 }
 
 declare namespace Arguments {
-  /** Arguments passed to the `manage-processors` command */
-  export type ManageProcessors = {}
-  /** Arguments passed to the `create-processor` command */
-  export type CreateProcessor = {}
   /** Arguments passed to the `manage-ai` command */
   export type ManageAi = {}
   /** Arguments passed to the `processor-1` command */

@@ -1,22 +1,11 @@
-import {
-  List,
-  getPreferenceValues,
-  Icon,
-  ActionPanel,
-  Action,
-  openCommandPreferences,
-  launchCommand,
-  LaunchType,
-  updateCommandMetadata,
-} from "@raycast/api";
+import { List, getPreferenceValues, Icon } from "@raycast/api";
 import { useState, useEffect } from "react";
-import { getProcessor } from "./utils/storage";
 import { ProcessorConfig } from "./types/processor";
 import { PromptList } from "./components/PromptList";
-import { ConfigGuide } from "./components/ConfigGuide";
 
 interface Preferences {
-  processorId?: string;
+  name?: string;
+  directory: string;
 }
 
 export default function Command() {
@@ -33,25 +22,20 @@ export default function Command() {
     try {
       const preferences = getPreferenceValues<Preferences>();
 
-      if (!preferences.processorId) {
-        setError("未配置 Processor ID");
-        // 清除 subtitle
-        await updateCommandMetadata({ subtitle: null });
+      if (!preferences.directory) {
+        setError("请在 Preferences 中配置 Prompts Directory");
         setIsLoading(false);
         return;
       }
 
-      const config = await getProcessor(preferences.processorId);
-      if (!config) {
-        setError(`找不到 Processor: ${preferences.processorId}`);
-        // 清除 subtitle
-        await updateCommandMetadata({ subtitle: null });
-        setIsLoading(false);
-        return;
-      }
+      // 直接从 preferences 创建 ProcessorConfig
+      const config: ProcessorConfig = {
+        id: preferences.directory, // 使用目录作为 ID
+        name: preferences.name || "Prompts",
+        directory: preferences.directory,
+        createdAt: Date.now(),
+      };
 
-      // 更新 subtitle 为 processor 名称
-      await updateCommandMetadata({ subtitle: config.name });
       setProcessor(config);
     } catch (err) {
       setError(err instanceof Error ? err.message : "加载失败");
@@ -61,43 +45,12 @@ export default function Command() {
   }
 
   if (error) {
-    const isNotConfigured = error === "未配置 Processor ID";
     return (
       <List>
         <List.EmptyView
-          title={isNotConfigured ? "未配置" : "配置错误"}
-          description={
-            isNotConfigured
-              ? "请在命令设置中配置 Processor ID。\n\n1. 点击下方的 '打开命令设置' 按钮\n2. 粘贴 Processor ID\n3. 启用命令\n\n💡 可以从 'Manage Input Processors' 复制 Processor ID"
-              : error
-          }
-          icon={isNotConfigured ? Icon.Gear : Icon.XMarkCircle}
-          actions={
-            <ActionPanel>
-              <Action
-                title="打开命令设置"
-                icon={Icon.Gear}
-                onAction={openCommandPreferences}
-                shortcut={{ modifiers: ["cmd"], key: "," }}
-              />
-              <Action
-                title="查看所有 Processors"
-                icon={Icon.List}
-                onAction={async () => {
-                  await launchCommand({
-                    name: "manage-processors",
-                    type: LaunchType.UserInitiated,
-                  });
-                }}
-              />
-              <Action.Push
-                title="查看配置说明"
-                icon={Icon.QuestionMark}
-                target={<ConfigGuide showOpenCommandPreferences={true} />}
-                shortcut={{ modifiers: ["cmd"], key: "h" }}
-              />
-            </ActionPanel>
-          }
+          title="配置错误"
+          description={error}
+          icon={Icon.XMarkCircle}
         />
       </List>
     );

@@ -8,18 +8,6 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "manage-processors",
-      "title": "Manage Input Processors",
-      "description": "Manage your input processors",
-      "mode": "view"
-    },
-    {
-      "name": "create-processor",
-      "title": "Create Input Processor",
-      "description": "Create a new input processor",
-      "mode": "view"
-    },
-    {
       "name": "manage-ai",
       "title": "Manage AI Providers",
       "description": "Manage your AI providers and settings",
@@ -33,11 +21,20 @@
       "disabledByDefault": true,
       "preferences": [
         {
-          "name": "processorId",
+          "name": "name",
           "type": "textfield",
           "required": false,
-          "title": "Processor ID",
-          "description": "The ID of the processor to use"
+          "title": "Processor Name",
+          "description": "Display name for this processor",
+          "placeholder": "My Prompts"
+        },
+        {
+          "name": "directory",
+          "type": "textfield",
+          "required": true,
+          "title": "Prompts Directory",
+          "description": "Absolute path to the directory containing prompt files",
+          "placeholder": "/Users/username/Documents/prompts"
         }
       ]
     },
@@ -49,11 +46,20 @@
       "disabledByDefault": true,
       "preferences": [
         {
-          "name": "processorId",
+          "name": "name",
           "type": "textfield",
           "required": false,
-          "title": "Processor ID",
-          "description": "The ID of the processor to use"
+          "title": "Processor Name",
+          "description": "Display name for this processor",
+          "placeholder": "My Prompts"
+        },
+        {
+          "name": "directory",
+          "type": "textfield",
+          "required": true,
+          "title": "Prompts Directory",
+          "description": "Absolute path to the directory containing prompt files",
+          "placeholder": "/Users/username/Documents/prompts"
         }
       ]
     },
@@ -65,11 +71,20 @@
       "disabledByDefault": true,
       "preferences": [
         {
-          "name": "processorId",
+          "name": "name",
           "type": "textfield",
           "required": false,
-          "title": "Processor ID",
-          "description": "The ID of the processor to use"
+          "title": "Processor Name",
+          "description": "Display name for this processor",
+          "placeholder": "My Prompts"
+        },
+        {
+          "name": "directory",
+          "type": "textfield",
+          "required": true,
+          "title": "Prompts Directory",
+          "description": "Absolute path to the directory containing prompt files",
+          "placeholder": "/Users/username/Documents/prompts"
         }
       ]
     },
@@ -81,11 +96,20 @@
       "disabledByDefault": true,
       "preferences": [
         {
-          "name": "processorId",
+          "name": "name",
           "type": "textfield",
           "required": false,
-          "title": "Processor ID",
-          "description": "The ID of the processor to use"
+          "title": "Processor Name",
+          "description": "Display name for this processor",
+          "placeholder": "My Prompts"
+        },
+        {
+          "name": "directory",
+          "type": "textfield",
+          "required": true,
+          "title": "Prompts Directory",
+          "description": "Absolute path to the directory containing prompt files",
+          "placeholder": "/Users/username/Documents/prompts"
         }
       ]
     },
@@ -97,11 +121,20 @@
       "disabledByDefault": true,
       "preferences": [
         {
-          "name": "processorId",
+          "name": "name",
           "type": "textfield",
           "required": false,
-          "title": "Processor ID",
-          "description": "The ID of the processor to use"
+          "title": "Processor Name",
+          "description": "Display name for this processor",
+          "placeholder": "My Prompts"
+        },
+        {
+          "name": "directory",
+          "type": "textfield",
+          "required": true,
+          "title": "Prompts Directory",
+          "description": "Absolute path to the directory containing prompt files",
+          "placeholder": "/Users/username/Documents/prompts"
         }
       ]
     },
@@ -113,11 +146,20 @@
       "disabledByDefault": true,
       "preferences": [
         {
-          "name": "processorId",
+          "name": "name",
           "type": "textfield",
           "required": false,
-          "title": "Processor ID",
-          "description": "The ID of the processor to use"
+          "title": "Processor Name",
+          "description": "Display name for this processor",
+          "placeholder": "My Prompts"
+        },
+        {
+          "name": "directory",
+          "type": "textfield",
+          "required": true,
+          "title": "Prompts Directory",
+          "description": "Absolute path to the directory containing prompt files",
+          "placeholder": "/Users/username/Documents/prompts"
         }
       ]
     },
@@ -129,11 +171,20 @@
       "disabledByDefault": true,
       "preferences": [
         {
-          "name": "processorId",
+          "name": "name",
           "type": "textfield",
           "required": false,
-          "title": "Processor ID",
-          "description": "The ID of the processor to use"
+          "title": "Processor Name",
+          "description": "Display name for this processor",
+          "placeholder": "My Prompts"
+        },
+        {
+          "name": "directory",
+          "type": "textfield",
+          "required": true,
+          "title": "Prompts Directory",
+          "description": "Absolute path to the directory containing prompt files",
+          "placeholder": "/Users/username/Documents/prompts"
         }
       ]
     },
@@ -145,11 +196,20 @@
       "disabledByDefault": true,
       "preferences": [
         {
-          "name": "processorId",
+          "name": "name",
           "type": "textfield",
           "required": false,
-          "title": "Processor ID",
-          "description": "The ID of the processor to use"
+          "title": "Processor Name",
+          "description": "Display name for this processor",
+          "placeholder": "My Prompts"
+        },
+        {
+          "name": "directory",
+          "type": "textfield",
+          "required": true,
+          "title": "Prompts Directory",
+          "description": "Absolute path to the directory containing prompt files",
+          "placeholder": "/Users/username/Documents/prompts"
         }
       ]
     },
@@ -161,11 +221,20 @@
       "disabledByDefault": true,
       "preferences": [
         {
-          "name": "processorId",
+          "name": "name",
           "type": "textfield",
           "required": false,
-          "title": "Processor ID",
-          "description": "The ID of the processor to use"
+          "title": "Processor Name",
+          "description": "Display name for this processor",
+          "placeholder": "My Prompts"
+        },
+        {
+          "name": "directory",
+          "type": "textfield",
+          "required": true,
+          "title": "Prompts Directory",
+          "description": "Absolute path to the directory containing prompt files",
+          "placeholder": "/Users/username/Documents/prompts"
         }
       ]
     },
@@ -202,7 +271,7 @@
     }
   ],
   "dependencies": {
-    "@raycast/api": "^1.103.8",
+    "@raycast/api": "^1.103.10",
     "@raycast/utils": "^2.2.2",
     "gray-matter": "^4.0.3"
   },
@@ -211,7 +280,7 @@
     "@types/node": "22.13.10",
     "@types/react": "19.0.10",
     "eslint": "^8.57.1",
-    "prettier": "^3.7.1",
+    "prettier": "^3.7.4",
     "typescript": "^5.9.3"
   },
   "scripts": {

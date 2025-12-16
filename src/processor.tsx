@@ -1,11 +1,11 @@
 import { List, getPreferenceValues, Icon } from "@raycast/api";
 import { useState, useEffect } from "react";
-import { getProcessor } from "./utils/storage";
 import { ProcessorConfig } from "./types/processor";
 import { PromptList } from "./components/PromptList";
 
 interface Preferences {
-  processorId?: string;
+  name?: string;
+  directory: string;
 }
 
 export default function Command() {
@@ -22,18 +22,19 @@ export default function Command() {
     try {
       const preferences = getPreferenceValues<Preferences>();
 
-      if (!preferences.processorId) {
-        setError("未配置 Processor ID");
+      if (!preferences.directory) {
+        setError("请在 Preferences 中配置 Prompts Directory");
         setIsLoading(false);
         return;
       }
 
-      const config = await getProcessor(preferences.processorId);
-      if (!config) {
-        setError(`找不到 Processor: ${preferences.processorId}`);
-        setIsLoading(false);
-        return;
-      }
+      // 直接从 preferences 创建 ProcessorConfig
+      const config: ProcessorConfig = {
+        id: preferences.directory, // 使用目录作为 ID
+        name: preferences.name || "Prompts",
+        directory: preferences.directory,
+        createdAt: Date.now(),
+      };
 
       setProcessor(config);
     } catch (err) {

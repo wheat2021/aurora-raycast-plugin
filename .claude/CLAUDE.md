@@ -133,6 +133,7 @@ pnpm publish
 ✅ 变量替换引擎实现完成
 ✅ 示例提示词配置完成
 ✅ 配置方式简化完成 - 直接通过 Preferences 配置
+✅ Raycast 内置变量支持 - {selection} 和 {clipboard}
 
 ## 核心概念
 
@@ -156,10 +157,20 @@ pnpm publish
 - multiselect 类型支持合并多个选项的 extraInputs
 
 ### 变量替换 (Template Replacement)
-- 使用 `{{variable}}` 语法在正文中引用变量
+支持两种类型的变量：
+
+#### 1. 用户自定义变量 `{{variable}}`
+- 使用双花括号 `{{variable}}` 语法在正文中引用 frontmatter 中定义的变量
 - multiselect 类型的值自动转换为逗号分隔的字符串
 - checkbox 类型转换为 "是" 或 "否"
 - 未显示的 extraInput 字段替换为空字符串
+
+#### 2. Raycast 内置变量 `{variable}`
+- 使用单花括号 `{variable}` 语法引用 Raycast 内置变量
+- `{selection}` - 当前选中的文本
+- `{clipboard}` - 剪贴板内容
+- 如果无法获取变量值（如未选中文本或剪贴板为空），自动替换为空字符串
+- 详细使用说明请参考 `docs/variables.md`
 
 ### 脚本执行 (execScript)
 - 在 frontmatter 中配置 `execScript: /path/to/script.sh`

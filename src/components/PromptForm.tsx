@@ -7,6 +7,7 @@ import {
   Clipboard,
   Icon,
   popToRoot,
+  getSelectedText,
 } from "@raycast/api";
 import { useState, useEffect } from "react";
 import { PromptConfig, PromptValues, PromptInput } from "../types/prompt";
@@ -94,9 +95,35 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
   };
 
   // 将用户输入的值替换到 Markdown 正文模板中的 {{variable}} 占位符，隐藏字段（extraInputs 未触发显示的）替换为空字符串
-  const generatePrompt = (values: PromptValues): string => {
+  // 同时支持 Raycast 内置变量 {selection} 和 {clipboard}
+  const generatePrompt = async (values: PromptValues): Promise<string> => {
     const visibleInputIds = getVisibleInputIds(config.inputs, values);
-    return replaceTemplate(config.content, values, visibleInputIds);
+
+    // 读取当前选中的文本和剪贴板内容
+    let selection = "";
+    let clipboard = "";
+
+    try {
+      selection = await getSelectedText();
+    } catch (error) {
+      // 如果无法获取选中文本（比如没有选中内容），使用空字符串
+      selection = "";
+    }
+
+    try {
+      clipboard = (await Clipboard.readText()) || "";
+    } catch (error) {
+      // 如果无法读取剪贴板，使用空字符串
+      clipboard = "";
+    }
+
+    return replaceTemplate(
+      config.content,
+      values,
+      visibleInputIds,
+      selection,
+      clipboard,
+    );
   };
 
   // Enter 键触发：验证表单 → 根据是否有 execScript 决定执行脚本或粘贴内容
@@ -143,7 +170,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     }
 
     // 原有逻辑：生成提示词并粘贴
-    const prompt = generatePrompt(values);
+    const prompt = await generatePrompt(values);
     await Clipboard.paste(prompt);
     await showToast({
       style: Toast.Style.Success,
@@ -198,7 +225,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     }
 
     // 原有逻辑：生成提示词并复制
-    const prompt = generatePrompt(values);
+    const prompt = await generatePrompt(values);
     await Clipboard.copy(prompt);
     await showToast({
       style: Toast.Style.Success,

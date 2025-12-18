@@ -247,46 +247,6 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
       return;
     }
 
-    // 如果配置了 execScript（向后兼容），执行脚本而非粘贴内容
-    if (config.execScript) {
-      const toast = await showToast({
-        style: Toast.Style.Animated,
-        title: "正在执行脚本...",
-      });
-
-      try {
-        const visibleInputIds = getVisibleInputIds(config.inputs, values);
-        const { stdout, stderr } = await executeCommand(
-          config.execScript,
-          values,
-          visibleInputIds,
-        );
-
-        toast.style = Toast.Style.Success;
-        toast.title = "脚本执行成功";
-
-        // 设置命令结果状态，显示结果页面
-        setCommandResult({
-          success: true,
-          commandLine: config.execScript,
-          exitCode: 0,
-          stdout,
-          stderr,
-        });
-      } catch (error) {
-        toast.style = Toast.Style.Failure;
-        toast.title = "脚本执行失败";
-
-        // 设置命令结果状态，显示错误页面
-        setCommandResult({
-          success: false,
-          commandLine: config.execScript,
-          error: error instanceof Error ? error.message : "未知错误",
-        });
-      }
-      return;
-    }
-
     // 原有逻辑：生成提示词并粘贴
     const prompt = await generatePrompt(values);
     await Clipboard.paste(prompt);
@@ -384,46 +344,6 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
           success: false,
           commandLine: config.command.commandLine,
           args: config.command.args,
-          error: error instanceof Error ? error.message : "未知错误",
-        });
-      }
-      return;
-    }
-
-    // 如果配置了 execScript（向后兼容），执行脚本而非复制内容
-    if (config.execScript) {
-      const toast = await showToast({
-        style: Toast.Style.Animated,
-        title: "正在执行脚本...",
-      });
-
-      try {
-        const visibleInputIds = getVisibleInputIds(config.inputs, values);
-        const { stdout, stderr } = await executeCommand(
-          config.execScript,
-          values,
-          visibleInputIds,
-        );
-
-        toast.style = Toast.Style.Success;
-        toast.title = "脚本执行成功";
-
-        // 设置命令结果状态，显示结果页面
-        setCommandResult({
-          success: true,
-          commandLine: config.execScript,
-          exitCode: 0,
-          stdout,
-          stderr,
-        });
-      } catch (error) {
-        toast.style = Toast.Style.Failure;
-        toast.title = "脚本执行失败";
-
-        // 设置命令结果状态，显示错误页面
-        setCommandResult({
-          success: false,
-          commandLine: config.execScript,
           error: error instanceof Error ? error.message : "未知错误",
         });
       }

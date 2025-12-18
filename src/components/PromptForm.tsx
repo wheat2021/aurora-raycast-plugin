@@ -151,6 +151,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
       config.content,
       values,
       visibleInputIds,
+      config.inputs,
       selection,
       clipboard,
     );
@@ -175,6 +176,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
           config.request,
           values,
           visibleInputIds,
+          config.inputs,
         );
 
         toast.style = Toast.Style.Success;
@@ -184,7 +186,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         setRequestResult({
           success: true,
           method: config.request.method,
-          url: config.request.url,
+          url: response.url, // 使用替换后的 URL
           status: response.status,
           statusText: response.statusText,
           headers: response.headers,
@@ -194,11 +196,20 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         toast.style = Toast.Style.Failure;
         toast.title = "请求失败";
 
+        // 获取替换后的 URL（用于错误显示）
+        const visibleInputIds = getVisibleInputIds(config.inputs, values);
+        const replacedUrl = replaceTemplate(
+          config.request.url,
+          values,
+          visibleInputIds,
+          config.inputs,
+        );
+
         // 设置请求结果状态，显示错误页面
         setRequestResult({
           success: false,
           method: config.request.method,
-          url: config.request.url,
+          url: replacedUrl, // 使用替换后的 URL
           error: error instanceof Error ? error.message : "未知错误",
         });
       }
@@ -218,6 +229,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
           config.command,
           values,
           visibleInputIds,
+          config.inputs,
         );
 
         toast.style = Toast.Style.Success;
@@ -278,6 +290,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
           config.request,
           values,
           visibleInputIds,
+          config.inputs,
         );
 
         toast.style = Toast.Style.Success;
@@ -287,7 +300,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         setRequestResult({
           success: true,
           method: config.request.method,
-          url: config.request.url,
+          url: response.url, // 使用替换后的 URL
           status: response.status,
           statusText: response.statusText,
           headers: response.headers,
@@ -297,11 +310,20 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         toast.style = Toast.Style.Failure;
         toast.title = "请求失败";
 
+        // 获取替换后的 URL（用于错误显示）
+        const visibleInputIds = getVisibleInputIds(config.inputs, values);
+        const replacedUrl = replaceTemplate(
+          config.request.url,
+          values,
+          visibleInputIds,
+          config.inputs,
+        );
+
         // 设置请求结果状态，显示错误页面
         setRequestResult({
           success: false,
           method: config.request.method,
-          url: config.request.url,
+          url: replacedUrl, // 使用替换后的 URL
           error: error instanceof Error ? error.message : "未知错误",
         });
       }
@@ -321,6 +343,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
           config.command,
           values,
           visibleInputIds,
+          config.inputs,
         );
 
         toast.style = Toast.Style.Success;

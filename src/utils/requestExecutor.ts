@@ -1,32 +1,26 @@
-import { RequestConfig, PromptValues } from "../types/prompt";
-
-/**
- * 将字段值转换为字符串（用于变量替换）
- * @param value 字段值
- * @returns 字符串表示
- */
-function valueToString(value: string | string[] | boolean): string {
-  if (Array.isArray(value)) {
-    return value.join(", ");
-  }
-  if (typeof value === "boolean") {
-    return value ? "true" : "false";
-  }
-  return String(value);
-}
+import { RequestConfig, PromptValues, PromptInput } from "../types/prompt";
+import { valueToCommandString } from "./valueConverter";
 
 /**
  * 在字符串中替换变量 {{variable}}
  * @param template 模板字符串
  * @param values 用户输入的表单值
  * @param visibleInputIds 当前可见的字段 ID 集合
+ * @param inputs 输入字段配置列表
  * @returns 替换后的字符串
  */
 function replaceVariables(
   template: string,
   values: PromptValues,
   visibleInputIds: Set<string>,
+  inputs: PromptInput[],
 ): string {
+  // 创建 input 配置的快速查找映射
+  const inputMap = new Map<string, PromptInput>();
+  inputs.forEach((input) => {
+    inputMap.set(input.id, input);
+  });
+
   return template.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
     // 只替换可见字段的值
     if (!visibleInputIds.has(varName)) {
@@ -38,7 +32,8 @@ function replaceVariables(
       return "";
     }
 
-    return valueToString(value);
+    const input = inputMap.get(varName);
+    return valueToCommandString(value, input);
   });
 }
 
@@ -47,18 +42,20 @@ function replaceVariables(
  * @param obj 对象
  * @param values 用户输入的表单值
  * @param visibleInputIds 当前可见的字段 ID 集合
+ * @param inputs 输入字段配置列表
  * @returns 替换后的对象
  */
 function replaceObjectVariables(
   obj: Record<string, unknown>,
   values: PromptValues,
   visibleInputIds: Set<string>,
+  inputs: PromptInput[],
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === "string") {
-      result[key] = replaceVariables(value, values, visibleInputIds);
+      result[key] = replaceVariables(value, values, visibleInputIds, inputs);
     } else if (
       typeof value === "object" &&
       value !== null &&
@@ -68,6 +65,7 @@ function replaceObjectVariables(
         value as Record<string, unknown>,
         values,
         visibleInputIds,
+        inputs,
       );
     } else {
       result[key] = value;
@@ -99,6 +97,7 @@ function buildQueryString(
  * @param config 请求配置
  * @param values 用户输入的表单值
  * @param visibleInputIds 当前可见的字段 ID 集合
+ * @param inputs 输入字段配置列表
  * @returns Promise，包含响应数据
  * @throws 如果请求失败
  */
@@ -106,14 +105,16 @@ export async function executeRequest(
   config: RequestConfig,
   values: PromptValues,
   visibleInputIds: Set<string>,
+  inputs: PromptInput[],
 ): Promise<{
+  url: string; // 替换后的完整 URL
   status: number;
   statusText: string;
   headers: Record<string, string>;
   data: unknown;
 }> {
   // 替换 URL 中的变量
-  let url = replaceVariables(config.url, values, visibleInputIds);
+  let url = replaceVariables(config.url, values, visibleInputIds, inputs);
 
   // 处理 query 参数
   if (config.query) {
@@ -121,7 +122,7 @@ export async function executeRequest(
 
     for (const [key, value] of Object.entries(config.query)) {
       if (typeof value === "string") {
-        query[key] = replaceVariables(value, values, visibleInputIds);
+        query[key] = replaceVariables(value, values, visibleInputIds, inputs);
       } else {
         query[key] = value;
       }
@@ -138,7 +139,7 @@ export async function executeRequest(
 
   if (config.headers) {
     for (const [key, value] of Object.entries(config.headers)) {
-      headers[key] = replaceVariables(value, values, visibleInputIds);
+      headers[key] = replaceVariables(value, values, visibleInputIds, inputs);
     }
   }
 
@@ -149,7 +150,7 @@ export async function executeRequest(
   if (config.body) {
     if (typeof config.body === "string") {
       // 如果 body 是字符串，直接替换变量
-      body = replaceVariables(config.body, values, visibleInputIds);
+      body = replaceVariables(config.body, values, visibleInputIds, inputs);
       contentType = headers["Content-Type"] || "text/plain";
     } else {
       // 如果 body 是对象，递归替换变量后转为 JSON
@@ -157,6 +158,7 @@ export async function executeRequest(
         config.body,
         values,
         visibleInputIds,
+        inputs,
       );
       body = JSON.stringify(replacedBody);
       contentType = headers["Content-Type"] || "application/json";
@@ -214,6 +216,7 @@ export async function executeRequest(
     }
 
     return {
+      url, // 返回替换后的完整 URL
       status: response.status,
       statusText: response.statusText,
       headers: responseHeaders,

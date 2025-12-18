@@ -35,6 +35,8 @@ export interface PromptInput {
   valueItemType?: 0 | 1 | 2; // 用于 selectInFolder: 0=目录和文件(默认), 1=仅目录, 2=仅文件
   regIncludeFilter?: string; // 用于 selectInFolder，正则表达式包含过滤器
   regExcludeFilter?: string; // 用于 selectInFolder，正则表达式排除过滤器
+  trueValue?: string; // 用于 checkbox，自定义 true 时的输出值，默认为 "true" (命令/请求) 或 "是" (模板)
+  falseValue?: string; // 用于 checkbox，自定义 false 时的输出值，默认为 "false" (命令/请求) 或 "否" (模板)
 }
 
 /**

@@ -1,37 +1,31 @@
 import { execFile } from "child_process";
 import { promisify } from "util";
 import * as fs from "fs";
-import { CommandConfig, PromptValues } from "../types/prompt";
+import { CommandConfig, PromptValues, PromptInput } from "../types/prompt";
+import { valueToCommandString } from "./valueConverter";
 
 const execFileAsync = promisify(execFile);
-
-/**
- * 将字段值转换为字符串（用于变量替换）
- * @param value 字段值
- * @returns 字符串表示
- */
-function valueToString(value: string | string[] | boolean): string {
-  if (Array.isArray(value)) {
-    return value.join(", ");
-  }
-  if (typeof value === "boolean") {
-    return value ? "true" : "false";
-  }
-  return String(value);
-}
 
 /**
  * 在字符串中替换变量 {{variable}}
  * @param template 模板字符串
  * @param values 用户输入的表单值
  * @param visibleInputIds 当前可见的字段 ID 集合
+ * @param inputs 输入字段配置列表
  * @returns 替换后的字符串
  */
 function replaceVariables(
   template: string,
   values: PromptValues,
   visibleInputIds: Set<string>,
+  inputs: PromptInput[],
 ): string {
+  // 创建 input 配置的快速查找映射
+  const inputMap = new Map<string, PromptInput>();
+  inputs.forEach((input) => {
+    inputMap.set(input.id, input);
+  });
+
   return template.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
     // 只替换可见字段的值
     if (!visibleInputIds.has(varName)) {
@@ -43,7 +37,8 @@ function replaceVariables(
       return "";
     }
 
-    return valueToString(value);
+    const input = inputMap.get(varName);
+    return valueToCommandString(value, input);
   });
 }
 
@@ -61,13 +56,21 @@ function toEnvVarName(id: string): string {
  * 将表单值转换为环境变量对象（用于向后兼容旧的 execScript）
  * @param values 用户输入的表单值
  * @param visibleInputIds 当前可见的字段 ID 集合（隐藏字段不设置环境变量）
+ * @param inputs 输入字段配置列表
  * @returns 环境变量对象
  */
 function valuesToEnv(
   values: PromptValues,
   visibleInputIds: Set<string>,
+  inputs: PromptInput[],
 ): Record<string, string> {
   const env: Record<string, string> = {};
+
+  // 创建 input 配置的快速查找映射
+  const inputMap = new Map<string, PromptInput>();
+  inputs.forEach((input) => {
+    inputMap.set(input.id, input);
+  });
 
   for (const [id, value] of Object.entries(values)) {
     // 只为可见字段设置环境变量
@@ -81,7 +84,8 @@ function valuesToEnv(
       continue;
     }
 
-    env[envName] = valueToString(value);
+    const input = inputMap.get(id);
+    env[envName] = valueToCommandString(value, input);
   }
 
   return env;
@@ -96,6 +100,7 @@ function valuesToEnv(
  * @param commandOrPath CommandConfig 对象或脚本路径字符串
  * @param values 用户输入的表单值
  * @param visibleInputIds 当前可见的字段 ID 集合
+ * @param inputs 输入字段配置列表
  * @returns Promise，包含 stdout 和 stderr
  * @throws 如果脚本不存在、不可执行或执行失败
  */
@@ -103,6 +108,7 @@ export async function executeCommand(
   commandOrPath: CommandConfig | string,
   values: PromptValues,
   visibleInputIds: Set<string>,
+  inputs: PromptInput[],
 ): Promise<{ stdout: string; stderr: string }> {
   // 向后兼容：如果传入的是字符串，转换为 CommandConfig 对象
   const config: CommandConfig =
@@ -115,6 +121,7 @@ export async function executeCommand(
     config.commandLine,
     values,
     visibleInputIds,
+    inputs,
   );
 
   // 验证命令文件存在
@@ -133,7 +140,7 @@ export async function executeCommand(
   const args: string[] = [];
   if (config.args) {
     for (const arg of config.args) {
-      args.push(replaceVariables(arg, values, visibleInputIds));
+      args.push(replaceVariables(arg, values, visibleInputIds, inputs));
     }
   }
 
@@ -144,11 +151,11 @@ export async function executeCommand(
     // 使用配置中指定的 envs，并替换变量
     scriptEnv = {};
     for (const [key, value] of Object.entries(config.envs)) {
-      scriptEnv[key] = replaceVariables(value, values, visibleInputIds);
+      scriptEnv[key] = replaceVariables(value, values, visibleInputIds, inputs);
     }
   } else {
     // 向后兼容：如果没有配置 envs，自动将所有可见字段转为环境变量（旧行为）
-    scriptEnv = valuesToEnv(values, visibleInputIds);
+    scriptEnv = valuesToEnv(values, visibleInputIds, inputs);
   }
 
   // 合并当前进程的环境变量和命令专用环境变量
@@ -162,7 +169,7 @@ export async function executeCommand(
 
   // 替换 cwd 中的变量
   const cwd = config.cwd
-    ? replaceVariables(config.cwd, values, visibleInputIds)
+    ? replaceVariables(config.cwd, values, visibleInputIds, inputs)
     : undefined;
 
   // 如果指定了 cwd，验证目录存在

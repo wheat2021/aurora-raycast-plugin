@@ -18,9 +18,22 @@ import { InputConfigForm } from "./InputConfigForm";
 import { OptionListManager } from "./InputConfigForm";
 import { savePromptConfig } from "../utils/configWriter";
 import { executeScript } from "../utils/execScript";
+import { executeRequest } from "../utils/requestExecutor";
+import { RequestResult } from "./RequestResult";
 
 interface PromptFormProps {
   config: PromptConfig;
+}
+
+interface RequestResultState {
+  success: boolean;
+  method: string;
+  url: string;
+  status?: number;
+  statusText?: string;
+  headers?: Record<string, string>;
+  data?: unknown;
+  error?: string;
 }
 
 export function PromptForm({ config: initialConfig }: PromptFormProps) {
@@ -28,6 +41,9 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
   const [config, setConfig] = useState<PromptConfig>(initialConfig);
   const [formValues, setFormValues] = useState<PromptValues>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [requestResult, setRequestResult] = useState<RequestResultState | null>(
+    null,
+  );
 
   // 组件挂载时初始化表单值，按以下优先级：1. 字段配置的 default 属性；2. 选项中 isDefault=true 的项（multiselect 收集所有默认项，其他类型取第一个）
   useEffect(() => {
@@ -126,9 +142,52 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     );
   };
 
-  // Enter 键触发：验证表单 → 根据是否有 execScript 决定执行脚本或粘贴内容
+  // Enter 键触发：验证表单 → 根据配置决定执行 API 请求、脚本或粘贴内容
   const handlePaste = async (values: PromptValues) => {
     if (!validateForm(values)) {
+      return;
+    }
+
+    // 如果配置了 request，执行 REST API 请求而非粘贴内容
+    if (config.request) {
+      const toast = await showToast({
+        style: Toast.Style.Animated,
+        title: "正在发送请求...",
+      });
+
+      try {
+        const visibleInputIds = getVisibleInputIds(config.inputs, values);
+        const response = await executeRequest(
+          config.request,
+          values,
+          visibleInputIds,
+        );
+
+        toast.style = Toast.Style.Success;
+        toast.title = `请求成功 (${response.status})`;
+
+        // 设置请求结果状态，显示结果页面
+        setRequestResult({
+          success: true,
+          method: config.request.method,
+          url: config.request.url,
+          status: response.status,
+          statusText: response.statusText,
+          headers: response.headers,
+          data: response.data,
+        });
+      } catch (error) {
+        toast.style = Toast.Style.Failure;
+        toast.title = "请求失败";
+
+        // 设置请求结果状态，显示错误页面
+        setRequestResult({
+          success: false,
+          method: config.request.method,
+          url: config.request.url,
+          error: error instanceof Error ? error.message : "未知错误",
+        });
+      }
       return;
     }
 
@@ -181,9 +240,52 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     await popToRoot();
   };
 
-  // Cmd+Enter 快捷键触发：验证表单 → 根据是否有 execScript 决定执行脚本或复制内容
+  // Cmd+Enter 快捷键触发：验证表单 → 根据配置决定执行 API 请求、脚本或复制内容
   const handleCopy = async (values: PromptValues) => {
     if (!validateForm(values)) {
+      return;
+    }
+
+    // 如果配置了 request，执行 REST API 请求而非复制内容
+    if (config.request) {
+      const toast = await showToast({
+        style: Toast.Style.Animated,
+        title: "正在发送请求...",
+      });
+
+      try {
+        const visibleInputIds = getVisibleInputIds(config.inputs, values);
+        const response = await executeRequest(
+          config.request,
+          values,
+          visibleInputIds,
+        );
+
+        toast.style = Toast.Style.Success;
+        toast.title = `请求成功 (${response.status})`;
+
+        // 设置请求结果状态，显示结果页面
+        setRequestResult({
+          success: true,
+          method: config.request.method,
+          url: config.request.url,
+          status: response.status,
+          statusText: response.statusText,
+          headers: response.headers,
+          data: response.data,
+        });
+      } catch (error) {
+        toast.style = Toast.Style.Failure;
+        toast.title = "请求失败";
+
+        // 设置请求结果状态，显示错误页面
+        setRequestResult({
+          success: false,
+          method: config.request.method,
+          url: config.request.url,
+          error: error instanceof Error ? error.message : "未知错误",
+        });
+      }
       return;
     }
 
@@ -235,6 +337,11 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     // 返回文件列表
     await popToRoot();
   };
+
+  // 如果有请求结果，显示结果页面
+  if (requestResult) {
+    return <RequestResult {...requestResult} />;
+  }
 
   // 根据当前表单值和 extraInputs 配置，实时计算应该显示的字段列表（某些字段仅在特定选项被选中时显示）
   const visibleInputs = getVisibleInputs(config.inputs, formValues);

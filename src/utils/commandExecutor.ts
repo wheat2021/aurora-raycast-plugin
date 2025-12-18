@@ -1,0 +1,209 @@
+import { execFile } from "child_process";
+import { promisify } from "util";
+import * as fs from "fs";
+import { CommandConfig, PromptValues } from "../types/prompt";
+
+const execFileAsync = promisify(execFile);
+
+/**
+ * 将字段值转换为字符串（用于变量替换）
+ * @param value 字段值
+ * @returns 字符串表示
+ */
+function valueToString(value: string | string[] | boolean): string {
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+  return String(value);
+}
+
+/**
+ * 在字符串中替换变量 {{variable}}
+ * @param template 模板字符串
+ * @param values 用户输入的表单值
+ * @param visibleInputIds 当前可见的字段 ID 集合
+ * @returns 替换后的字符串
+ */
+function replaceVariables(
+  template: string,
+  values: PromptValues,
+  visibleInputIds: Set<string>,
+): string {
+  return template.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
+    // 只替换可见字段的值
+    if (!visibleInputIds.has(varName)) {
+      return "";
+    }
+
+    const value = values[varName];
+    if (value === undefined || value === null) {
+      return "";
+    }
+
+    return valueToString(value);
+  });
+}
+
+/**
+ * 将字段 ID 转换为环境变量名称（用于向后兼容旧的 execScript）
+ * 规则：转大写，保持字母、数字、下划线，其他字符转为下划线
+ * @param id 字段 ID
+ * @returns 环境变量名称
+ */
+function toEnvVarName(id: string): string {
+  return id.toUpperCase().replace(/[^A-Z0-9_]/g, "_");
+}
+
+/**
+ * 将表单值转换为环境变量对象（用于向后兼容旧的 execScript）
+ * @param values 用户输入的表单值
+ * @param visibleInputIds 当前可见的字段 ID 集合（隐藏字段不设置环境变量）
+ * @returns 环境变量对象
+ */
+function valuesToEnv(
+  values: PromptValues,
+  visibleInputIds: Set<string>,
+): Record<string, string> {
+  const env: Record<string, string> = {};
+
+  for (const [id, value] of Object.entries(values)) {
+    // 只为可见字段设置环境变量
+    if (!visibleInputIds.has(id)) {
+      continue;
+    }
+
+    const envName = toEnvVarName(id);
+
+    if (value === undefined || value === null) {
+      continue;
+    }
+
+    env[envName] = valueToString(value);
+  }
+
+  return env;
+}
+
+/**
+ * 执行命令或脚本
+ * 支持两种调用方式：
+ * 1. 传入 CommandConfig 对象（推荐）
+ * 2. 传入字符串路径（向后兼容旧的 execScript）
+ *
+ * @param commandOrPath CommandConfig 对象或脚本路径字符串
+ * @param values 用户输入的表单值
+ * @param visibleInputIds 当前可见的字段 ID 集合
+ * @returns Promise，包含 stdout 和 stderr
+ * @throws 如果脚本不存在、不可执行或执行失败
+ */
+export async function executeCommand(
+  commandOrPath: CommandConfig | string,
+  values: PromptValues,
+  visibleInputIds: Set<string>,
+): Promise<{ stdout: string; stderr: string }> {
+  // 向后兼容：如果传入的是字符串，转换为 CommandConfig 对象
+  const config: CommandConfig =
+    typeof commandOrPath === "string"
+      ? { commandLine: commandOrPath }
+      : commandOrPath;
+
+  // 替换 commandLine 中的变量
+  const commandLine = replaceVariables(
+    config.commandLine,
+    values,
+    visibleInputIds,
+  );
+
+  // 验证命令文件存在
+  if (!fs.existsSync(commandLine)) {
+    throw new Error(`命令或脚本文件不存在: ${commandLine}`);
+  }
+
+  // 检查是否可执行（Unix-like 系统）
+  try {
+    fs.accessSync(commandLine, fs.constants.X_OK);
+  } catch {
+    throw new Error(`文件不可执行: ${commandLine}`);
+  }
+
+  // 替换 args 中的变量
+  const args: string[] = [];
+  if (config.args) {
+    for (const arg of config.args) {
+      args.push(replaceVariables(arg, values, visibleInputIds));
+    }
+  }
+
+  // 处理环境变量
+  let scriptEnv: Record<string, string>;
+
+  if (config.envs) {
+    // 使用配置中指定的 envs，并替换变量
+    scriptEnv = {};
+    for (const [key, value] of Object.entries(config.envs)) {
+      scriptEnv[key] = replaceVariables(value, values, visibleInputIds);
+    }
+  } else {
+    // 向后兼容：如果没有配置 envs，自动将所有可见字段转为环境变量（旧行为）
+    scriptEnv = valuesToEnv(values, visibleInputIds);
+  }
+
+  // 合并当前进程的环境变量和命令专用环境变量
+  const env = {
+    ...process.env,
+    ...scriptEnv,
+    // 统一注入常用环境变量（避免 Raycast 不继承 shell 环境变量）
+    LIB_SH: process.env.LIB_SH || "/Users/terrychen/code/sh/lib.sh",
+    SCRIPT_DIR: process.env.SCRIPT_DIR || "/Users/terrychen/code/sh",
+  };
+
+  // 替换 cwd 中的变量
+  const cwd = config.cwd
+    ? replaceVariables(config.cwd, values, visibleInputIds)
+    : undefined;
+
+  // 如果指定了 cwd，验证目录存在
+  if (cwd && !fs.existsSync(cwd)) {
+    throw new Error(`工作目录不存在: ${cwd}`);
+  }
+
+  try {
+    // 执行命令，设置超时
+    const timeout = config.timeout || 30000;
+    const { stdout, stderr } = await execFileAsync(commandLine, args, {
+      env,
+      cwd,
+      timeout,
+      maxBuffer: 1024 * 1024, // 1MB
+    });
+
+    return { stdout, stderr };
+  } catch (error) {
+    // 处理执行错误
+    if (error instanceof Error) {
+      // execFile 错误包含 stdout 和 stderr
+      const execError = error as {
+        code?: number;
+        stdout?: string;
+        stderr?: string;
+        message: string;
+      };
+
+      throw new Error(
+        `命令执行失败 (exit code ${execError.code || "unknown"}): ${
+          execError.stderr || execError.message
+        }`,
+      );
+    }
+    throw error;
+  }
+}
+
+/**
+ * @deprecated 使用 executeCommand 替代
+ * 向后兼容函数，将被重定向到 executeCommand
+ */
+export const executeScript = executeCommand;

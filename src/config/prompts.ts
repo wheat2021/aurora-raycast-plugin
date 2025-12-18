@@ -107,6 +107,7 @@ export function loadPromptsFromDirectory(directory: string): PromptConfig[] {
         title: parsed.data.title,
         formDescription: parsed.data.formDescription,
         execScript: parsed.data.execScript,
+        command: parsed.data.command,
         request: parsed.data.request,
         inputs: validateInputs(parsed.data.inputs),
         content: resolvedContent,

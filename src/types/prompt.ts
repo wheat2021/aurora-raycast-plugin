@@ -55,12 +55,24 @@ export interface RequestConfig {
 }
 
 /**
+ * 命令执行配置
+ */
+export interface CommandConfig {
+  commandLine: string; // 必填：命令或脚本路径，支持变量替换 {{variable}}
+  args?: string[]; // 可选：命令行参数数组，支持变量替换 {{variable}}
+  envs?: Record<string, string>; // 可选：环境变量，支持变量替换 {{variable}}
+  cwd?: string; // 可选：工作目录，支持变量替换 {{variable}}
+  timeout?: number; // 可选：超时时间（毫秒），默认 30000
+}
+
+/**
  * 提示词配置（从 Markdown frontmatter 解析）
  */
 export interface PromptConfig {
   title: string;
   formDescription?: string; // 可选：表单整体说明文字
-  execScript?: string; // 可选：指定脚本路径，存在时执行脚本而非粘贴/复制内容
+  execScript?: string; // 可选（已废弃）：指定脚本路径，建议使用 command
+  command?: CommandConfig; // 可选：命令执行配置，存在时执行命令而非粘贴/复制内容
   request?: RequestConfig; // 可选：REST API 请求配置，存在时执行请求而非粘贴/复制内容
   inputs: PromptInput[];
   content: string; // Markdown 正文，用于模板替换

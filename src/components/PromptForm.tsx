@@ -17,9 +17,10 @@ import { replaceTemplate } from "../utils/template";
 import { InputConfigForm } from "./InputConfigForm";
 import { OptionListManager } from "./InputConfigForm";
 import { savePromptConfig } from "../utils/configWriter";
-import { executeScript } from "../utils/execScript";
+import { executeCommand } from "../utils/commandExecutor";
 import { executeRequest } from "../utils/requestExecutor";
 import { RequestResult } from "./RequestResult";
+import { CommandResult } from "./CommandResult";
 
 interface PromptFormProps {
   config: PromptConfig;
@@ -36,12 +37,25 @@ interface RequestResultState {
   error?: string;
 }
 
+interface CommandResultState {
+  success: boolean;
+  commandLine: string;
+  args?: string[];
+  exitCode?: number;
+  stdout?: string;
+  stderr?: string;
+  error?: string;
+}
+
 export function PromptForm({ config: initialConfig }: PromptFormProps) {
   // 使用状态管理配置，以便保存后能刷新
   const [config, setConfig] = useState<PromptConfig>(initialConfig);
   const [formValues, setFormValues] = useState<PromptValues>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [requestResult, setRequestResult] = useState<RequestResultState | null>(
+    null,
+  );
+  const [commandResult, setCommandResult] = useState<CommandResultState | null>(
     null,
   );
 
@@ -191,7 +205,49 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
       return;
     }
 
-    // 如果配置了 execScript，执行脚本而非粘贴内容
+    // 如果配置了 command，执行命令而非粘贴内容
+    if (config.command) {
+      const toast = await showToast({
+        style: Toast.Style.Animated,
+        title: "正在执行命令...",
+      });
+
+      try {
+        const visibleInputIds = getVisibleInputIds(config.inputs, values);
+        const { stdout, stderr } = await executeCommand(
+          config.command,
+          values,
+          visibleInputIds,
+        );
+
+        toast.style = Toast.Style.Success;
+        toast.title = "命令执行成功";
+
+        // 设置命令结果状态，显示结果页面
+        setCommandResult({
+          success: true,
+          commandLine: config.command.commandLine,
+          args: config.command.args,
+          exitCode: 0,
+          stdout,
+          stderr,
+        });
+      } catch (error) {
+        toast.style = Toast.Style.Failure;
+        toast.title = "命令执行失败";
+
+        // 设置命令结果状态，显示错误页面
+        setCommandResult({
+          success: false,
+          commandLine: config.command.commandLine,
+          args: config.command.args,
+          error: error instanceof Error ? error.message : "未知错误",
+        });
+      }
+      return;
+    }
+
+    // 如果配置了 execScript（向后兼容），执行脚本而非粘贴内容
     if (config.execScript) {
       const toast = await showToast({
         style: Toast.Style.Animated,
@@ -200,7 +256,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
 
       try {
         const visibleInputIds = getVisibleInputIds(config.inputs, values);
-        const { stdout, stderr } = await executeScript(
+        const { stdout, stderr } = await executeCommand(
           config.execScript,
           values,
           visibleInputIds,
@@ -209,21 +265,24 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         toast.style = Toast.Style.Success;
         toast.title = "脚本执行成功";
 
-        // 如果有输出，记录到日志
-        if (stdout) {
-          console.log("Script stdout:", stdout);
-        }
-        if (stderr) {
-          console.warn("Script stderr:", stderr);
-        }
-
-        // 返回文件列表
-        await popToRoot();
+        // 设置命令结果状态，显示结果页面
+        setCommandResult({
+          success: true,
+          commandLine: config.execScript,
+          exitCode: 0,
+          stdout,
+          stderr,
+        });
       } catch (error) {
         toast.style = Toast.Style.Failure;
         toast.title = "脚本执行失败";
-        toast.message = error instanceof Error ? error.message : "未知错误";
-        console.error("Script execution error:", error);
+
+        // 设置命令结果状态，显示错误页面
+        setCommandResult({
+          success: false,
+          commandLine: config.execScript,
+          error: error instanceof Error ? error.message : "未知错误",
+        });
       }
       return;
     }
@@ -289,7 +348,49 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
       return;
     }
 
-    // 如果配置了 execScript，执行脚本而非复制内容
+    // 如果配置了 command，执行命令而非复制内容
+    if (config.command) {
+      const toast = await showToast({
+        style: Toast.Style.Animated,
+        title: "正在执行命令...",
+      });
+
+      try {
+        const visibleInputIds = getVisibleInputIds(config.inputs, values);
+        const { stdout, stderr } = await executeCommand(
+          config.command,
+          values,
+          visibleInputIds,
+        );
+
+        toast.style = Toast.Style.Success;
+        toast.title = "命令执行成功";
+
+        // 设置命令结果状态，显示结果页面
+        setCommandResult({
+          success: true,
+          commandLine: config.command.commandLine,
+          args: config.command.args,
+          exitCode: 0,
+          stdout,
+          stderr,
+        });
+      } catch (error) {
+        toast.style = Toast.Style.Failure;
+        toast.title = "命令执行失败";
+
+        // 设置命令结果状态，显示错误页面
+        setCommandResult({
+          success: false,
+          commandLine: config.command.commandLine,
+          args: config.command.args,
+          error: error instanceof Error ? error.message : "未知错误",
+        });
+      }
+      return;
+    }
+
+    // 如果配置了 execScript（向后兼容），执行脚本而非复制内容
     if (config.execScript) {
       const toast = await showToast({
         style: Toast.Style.Animated,
@@ -298,7 +399,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
 
       try {
         const visibleInputIds = getVisibleInputIds(config.inputs, values);
-        const { stdout, stderr } = await executeScript(
+        const { stdout, stderr } = await executeCommand(
           config.execScript,
           values,
           visibleInputIds,
@@ -307,21 +408,24 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         toast.style = Toast.Style.Success;
         toast.title = "脚本执行成功";
 
-        // 如果有输出，记录到日志
-        if (stdout) {
-          console.log("Script stdout:", stdout);
-        }
-        if (stderr) {
-          console.warn("Script stderr:", stderr);
-        }
-
-        // 返回文件列表
-        await popToRoot();
+        // 设置命令结果状态，显示结果页面
+        setCommandResult({
+          success: true,
+          commandLine: config.execScript,
+          exitCode: 0,
+          stdout,
+          stderr,
+        });
       } catch (error) {
         toast.style = Toast.Style.Failure;
         toast.title = "脚本执行失败";
-        toast.message = error instanceof Error ? error.message : "未知错误";
-        console.error("Script execution error:", error);
+
+        // 设置命令结果状态，显示错误页面
+        setCommandResult({
+          success: false,
+          commandLine: config.execScript,
+          error: error instanceof Error ? error.message : "未知错误",
+        });
       }
       return;
     }
@@ -341,6 +445,11 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
   // 如果有请求结果，显示结果页面
   if (requestResult) {
     return <RequestResult {...requestResult} />;
+  }
+
+  // 如果有命令结果，显示结果页面
+  if (commandResult) {
+    return <CommandResult {...commandResult} />;
   }
 
   // 根据当前表单值和 extraInputs 配置，实时计算应该显示的字段列表（某些字段仅在特定选项被选中时显示）

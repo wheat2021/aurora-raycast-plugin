@@ -59,8 +59,16 @@ function replaceObjectVariables(
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === "string") {
       result[key] = replaceVariables(value, values, visibleInputIds);
-    } else if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-      result[key] = replaceObjectVariables(value as Record<string, unknown>, values, visibleInputIds);
+    } else if (
+      typeof value === "object" &&
+      value !== null &&
+      !Array.isArray(value)
+    ) {
+      result[key] = replaceObjectVariables(
+        value as Record<string, unknown>,
+        values,
+        visibleInputIds,
+      );
     } else {
       result[key] = value;
     }
@@ -74,7 +82,9 @@ function replaceObjectVariables(
  * @param query 查询参数对象
  * @returns 查询字符串（不包含 ?）
  */
-function buildQueryString(query: Record<string, string | number | boolean>): string {
+function buildQueryString(
+  query: Record<string, string | number | boolean>,
+): string {
   const params = new URLSearchParams();
 
   for (const [key, value] of Object.entries(query)) {
@@ -143,7 +153,11 @@ export async function executeRequest(
       contentType = headers["Content-Type"] || "text/plain";
     } else {
       // 如果 body 是对象，递归替换变量后转为 JSON
-      const replacedBody = replaceObjectVariables(config.body, values, visibleInputIds);
+      const replacedBody = replaceObjectVariables(
+        config.body,
+        values,
+        visibleInputIds,
+      );
       body = JSON.stringify(replacedBody);
       contentType = headers["Content-Type"] || "application/json";
     }

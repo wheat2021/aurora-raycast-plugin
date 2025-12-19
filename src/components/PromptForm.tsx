@@ -81,6 +81,26 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     setFormValues(initialValues);
   }, [config]);
 
+  // 保存表单值到配置文件的 default 属性，以便下次使用
+  const saveFormValues = async (values: PromptValues) => {
+    // 更新所有字段的 default 值
+    const newInputs = config.inputs.map((input) => ({
+      ...input,
+      default: values[input.id],
+    }));
+
+    const newConfig = {
+      ...config,
+      inputs: newInputs,
+    };
+
+    // 保存到配置文件
+    await savePromptConfig(newConfig);
+
+    // 更新本地状态
+    setConfig(newConfig);
+  };
+
   // 由子组件 PromptField 触发，更新指定字段的值到 formValues 状态，并清除该字段的验证错误信息（如果存在）
   const handleFieldChange = (
     id: string,
@@ -165,6 +185,9 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     if (!validateForm(values)) {
       return;
     }
+
+    // 保存表单值到 LocalStorage，以便下次使用
+    await saveFormValues(values);
 
     const visibleInputIds = getVisibleInputIds(config.inputs, values);
 
@@ -274,6 +297,9 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     if (!validateForm(values)) {
       return;
     }
+
+    // 保存表单值到 LocalStorage，以便下次使用
+    await saveFormValues(values);
 
     const visibleInputIds = getVisibleInputIds(config.inputs, values);
 

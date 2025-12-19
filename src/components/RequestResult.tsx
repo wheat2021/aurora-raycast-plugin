@@ -151,15 +151,8 @@ export function RequestResult(props: RequestResultProps) {
           )}
           <Detail.Metadata.Separator />
           <Detail.Metadata.Label title="请求方法" text={method} />
-          <Detail.Metadata.Label
-            title="请求 URL"
-            text={url}
-            icon={Icon.Link}
-          />
-          <Detail.Metadata.Label
-            title="💡 提示"
-            text="按 ⌘U 复制 URL"
-          />
+          <Detail.Metadata.Label title="请求 URL" text={url} icon={Icon.Link} />
+          <Detail.Metadata.Label title="💡 提示" text="按 ⌘U 复制 URL" />
           {headers && Object.keys(headers).length > 0 && (
             <>
               <Detail.Metadata.Separator />

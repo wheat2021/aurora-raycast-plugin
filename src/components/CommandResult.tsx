@@ -102,10 +102,7 @@ export function CommandResult({
             icon={success ? Icon.CheckCircle : Icon.XMarkCircle}
           />
           {exitCode !== undefined && (
-            <Detail.Metadata.Label
-              title="退出码"
-              text={String(exitCode)}
-            />
+            <Detail.Metadata.Label title="退出码" text={String(exitCode)} />
           )}
           <Detail.Metadata.Separator />
           <Detail.Metadata.Label
@@ -114,15 +111,9 @@ export function CommandResult({
             icon={Icon.Terminal}
           />
           {args && args.length > 0 && (
-            <Detail.Metadata.Label
-              title="参数"
-              text={args.join(" ")}
-            />
+            <Detail.Metadata.Label title="参数" text={args.join(" ")} />
           )}
-          <Detail.Metadata.Label
-            title="💡 提示"
-            text="按 ⌘L 复制命令行路径"
-          />
+          <Detail.Metadata.Label title="💡 提示" text="按 ⌘L 复制命令行路径" />
         </Detail.Metadata>
       }
     />

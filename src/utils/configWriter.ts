@@ -61,6 +61,9 @@ export async function savePromptConfig(config: PromptConfig): Promise<void> {
     if (config.command) {
       frontmatter.command = removeUndefined(config.command);
     }
+    if (config.lastUseTime !== undefined) {
+      frontmatter.lastUseTime = config.lastUseTime;
+    }
 
     // 使用 gray-matter 生成 MD 内容
     const fileContent = matter.stringify(config.content, frontmatter);

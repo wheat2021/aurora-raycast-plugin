@@ -112,6 +112,7 @@ export function loadPromptsFromDirectory(directory: string): PromptConfig[] {
         inputs: validateInputs(parsed.data.inputs),
         content: resolvedContent,
         filePath,
+        lastUseTime: parsed.data.lastUseTime,
       };
 
       prompts.push(promptConfig);
@@ -119,6 +120,14 @@ export function loadPromptsFromDirectory(directory: string): PromptConfig[] {
       console.error(`Error loading prompt file ${file}:`, error);
     }
   }
+
+  // 按 lastUseTime 降序排序（最近使用的排在前面）
+  // 没有 lastUseTime 的项排在后面
+  prompts.sort((a, b) => {
+    const timeA = a.lastUseTime ?? 0;
+    const timeB = b.lastUseTime ?? 0;
+    return timeB - timeA;
+  });
 
   return prompts;
 }

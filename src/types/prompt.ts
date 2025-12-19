@@ -79,6 +79,7 @@ export interface PromptConfig {
   inputs: PromptInput[];
   content: string; // Markdown 正文，用于模板替换
   filePath?: string; // 可选：源文件路径，用于调试
+  lastUseTime?: number; // 可选：最后使用时间戳（毫秒），用于排序
 }
 
 /**

@@ -81,7 +81,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     setFormValues(initialValues);
   }, [config]);
 
-  // 保存表单值到配置文件的 default 属性，以便下次使用
+  // 保存表单值到配置文件的 default 属性，以及 lastUseTime，以便下次使用
   const saveFormValues = async (values: PromptValues) => {
     // 更新所有字段的 default 值
     const newInputs = config.inputs.map((input) => ({
@@ -92,6 +92,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     const newConfig = {
       ...config,
       inputs: newInputs,
+      lastUseTime: Date.now(), // 更新最后使用时间戳
     };
 
     // 保存到配置文件

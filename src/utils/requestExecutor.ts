@@ -156,7 +156,12 @@ export function generateCurlCommand(
 
     if (typeof config.body === "string") {
       // 如果 body 是字符串，直接替换变量
-      bodyString = replaceVariables(config.body, values, visibleInputIds, inputs);
+      bodyString = replaceVariables(
+        config.body,
+        values,
+        visibleInputIds,
+        inputs,
+      );
     } else {
       // 如果 body 是对象，递归替换变量后转为 JSON
       const replacedBody = replaceObjectVariables(

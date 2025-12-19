@@ -1,10 +1,15 @@
 import { LocalStorage } from "@raycast/api";
-import { PromptInput, PromptInputType } from "../types/prompt";
+import { PromptInput, PromptInputType, InputTemplate } from "../types/prompt";
 
 /**
- * Input 模板缓存键
+ * Input 模板缓存键（旧版，兼容保留）
  */
 const TEMPLATES_CACHE_KEY = "aurora_input_templates";
+
+/**
+ * Input 模板列表缓存键（新版）
+ */
+const TEMPLATES_LIST_CACHE_KEY = "aurora_input_templates_v2";
 
 /**
  * 默认 Input 模板配置
@@ -111,7 +116,204 @@ const DEFAULT_TEMPLATES: Record<PromptInputType, Partial<PromptInput>> = {
 };
 
 /**
- * 从缓存加载 Input 模板
+ * 将默认模板转换为 InputTemplate 数组
+ */
+function getBuiltInTemplates(): InputTemplate[] {
+  const types: PromptInputType[] = [
+    "text",
+    "textarea",
+    "select",
+    "multiselect",
+    "checkbox",
+    "selectInFolder",
+  ];
+
+  return types.map((type) => ({
+    id: type, // 预设模板使用 type 作为 ID
+    name: getTypeName(type),
+    type,
+    isBuiltIn: true,
+    config: DEFAULT_TEMPLATES[type],
+  }));
+}
+
+/**
+ * 获取类型的中文名称
+ */
+function getTypeName(type: PromptInputType): string {
+  const names: Record<PromptInputType, string> = {
+    text: "文本输入",
+    textarea: "多行文本",
+    select: "单选下拉框",
+    multiselect: "多选标签",
+    checkbox: "复选框",
+    selectInFolder: "文件夹选择",
+  };
+  return names[type];
+}
+
+/**
+ * 生成唯一 ID
+ */
+function generateId(): string {
+  return `custom_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+}
+
+// ==================== 新版多模板管理 API ====================
+
+/**
+ * 加载所有 Input 模板（预设 + 自定义）
+ */
+export async function loadAllTemplates(): Promise<InputTemplate[]> {
+  try {
+    const cached = await LocalStorage.getItem<string>(TEMPLATES_LIST_CACHE_KEY);
+    let customTemplates: InputTemplate[] = [];
+
+    if (cached) {
+      customTemplates = JSON.parse(cached);
+    }
+
+    // 合并预设模板和自定义模板
+    const builtInTemplates = getBuiltInTemplates();
+    return [...builtInTemplates, ...customTemplates];
+  } catch (error) {
+    console.error("加载 Input 模板列表失败:", error);
+    // 出错时只返回预设模板
+    return getBuiltInTemplates();
+  }
+}
+
+/**
+ * 保存自定义模板列表
+ */
+async function saveCustomTemplates(templates: InputTemplate[]): Promise<void> {
+  const customTemplates = templates.filter((t) => !t.isBuiltIn);
+  await LocalStorage.setItem(
+    TEMPLATES_LIST_CACHE_KEY,
+    JSON.stringify(customTemplates),
+  );
+}
+
+/**
+ * 根据 ID 获取模板
+ */
+export async function getTemplateById(
+  id: string,
+): Promise<InputTemplate | undefined> {
+  const templates = await loadAllTemplates();
+  return templates.find((t) => t.id === id);
+}
+
+/**
+ * 根据类型获取所有模板
+ */
+export async function getTemplatesByType(
+  type: PromptInputType,
+): Promise<InputTemplate[]> {
+  const templates = await loadAllTemplates();
+  return templates.filter((t) => t.type === type);
+}
+
+/**
+ * 创建新的自定义模板
+ */
+export async function createTemplate(
+  name: string,
+  type: PromptInputType,
+  config: Partial<PromptInput>,
+): Promise<InputTemplate> {
+  const templates = await loadAllTemplates();
+
+  const newTemplate: InputTemplate = {
+    id: generateId(),
+    name,
+    type,
+    isBuiltIn: false,
+    config,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+
+  const updatedTemplates = [...templates, newTemplate];
+  await saveCustomTemplates(updatedTemplates);
+
+  return newTemplate;
+}
+
+/**
+ * 更新模板
+ */
+export async function updateTemplate(
+  id: string,
+  updates: Partial<InputTemplate>,
+): Promise<void> {
+  const templates = await loadAllTemplates();
+  const index = templates.findIndex((t) => t.id === id);
+
+  if (index === -1) {
+    throw new Error(`模板 ${id} 不存在`);
+  }
+
+  const template = templates[index];
+
+  // 预设模板不允许修改某些字段
+  if (template.isBuiltIn) {
+    // 只允许修改 config
+    if (updates.config) {
+      templates[index] = {
+        ...template,
+        config: { ...template.config, ...updates.config },
+        updatedAt: Date.now(),
+      };
+    }
+  } else {
+    // 自定义模板可以修改所有字段
+    templates[index] = {
+      ...template,
+      ...updates,
+      id: template.id, // ID 不可修改
+      isBuiltIn: false, // isBuiltIn 不可修改
+      updatedAt: Date.now(),
+    };
+  }
+
+  await saveCustomTemplates(templates);
+}
+
+/**
+ * 删除自定义模板
+ */
+export async function deleteTemplate(id: string): Promise<void> {
+  const templates = await loadAllTemplates();
+  const template = templates.find((t) => t.id === id);
+
+  if (!template) {
+    throw new Error(`模板 ${id} 不存在`);
+  }
+
+  if (template.isBuiltIn) {
+    throw new Error("不能删除预设模板");
+  }
+
+  const updatedTemplates = templates.filter((t) => t.id !== id);
+  await saveCustomTemplates(updatedTemplates);
+}
+
+/**
+ * 重置预设模板为默认值
+ */
+export async function resetBuiltInTemplate(
+  type: PromptInputType,
+): Promise<void> {
+  // 预设模板直接从 DEFAULT_TEMPLATES 读取，无需重置
+  // 这个函数为了保持 API 一致性而保留
+  await updateTemplate(type, { config: DEFAULT_TEMPLATES[type] });
+}
+
+// ==================== 旧版 API（兼容保留）====================
+
+/**
+ * 从缓存加载 Input 模板（旧版格式）
  */
 export async function loadInputTemplates(): Promise<
   Record<PromptInputType, Partial<PromptInput>>
@@ -132,7 +334,7 @@ export async function loadInputTemplates(): Promise<
 }
 
 /**
- * 保存 Input 模板到缓存
+ * 保存 Input 模板到缓存（旧版格式）
  */
 export async function saveInputTemplates(
   templates: Record<PromptInputType, Partial<PromptInput>>,
@@ -146,7 +348,7 @@ export async function saveInputTemplates(
 }
 
 /**
- * 获取指定类型的模板
+ * 获取指定类型的模板（旧版，返回预设模板）
  */
 export async function getInputTemplate(
   type: PromptInputType,
@@ -156,7 +358,7 @@ export async function getInputTemplate(
 }
 
 /**
- * 更新指定类型的模板
+ * 更新指定类型的模板（旧版）
  */
 export async function updateInputTemplate(
   type: PromptInputType,
@@ -168,7 +370,7 @@ export async function updateInputTemplate(
 }
 
 /**
- * 重置所有模板为默认值
+ * 重置所有模板为默认值（旧版）
  */
 export async function resetInputTemplates(): Promise<void> {
   await saveInputTemplates(DEFAULT_TEMPLATES);
@@ -191,6 +393,7 @@ export async function mergeInputWithTemplate(
     }
 
     // 从用户配置中移除 copy 属性
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { copy, ...userConfig } = userInput;
 
     // 合并模板和用户配置（用户配置优先）

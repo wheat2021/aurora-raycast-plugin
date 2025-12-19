@@ -183,6 +183,7 @@ async function validateInputs(inputs: unknown[]): Promise<PromptInput[]> {
       }
 
       // 移除 copy 属性（如果还存在）
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { copy, ...cleanInput } = input as PromptInput & {
         copy?: PromptInputType;
       };

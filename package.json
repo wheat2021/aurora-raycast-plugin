@@ -14,6 +14,12 @@
       "mode": "view"
     },
     {
+      "name": "manage-input-templates",
+      "title": "Manage Input Templates",
+      "description": "Manage input field templates for prompts",
+      "mode": "view"
+    },
+    {
       "name": "processor-1",
       "title": "Processor 1",
       "description": "Processor slot 1 for custom prompts",

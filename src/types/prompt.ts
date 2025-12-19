@@ -89,3 +89,16 @@ export interface PromptConfig {
 export interface PromptValues {
   [key: string]: string | string[] | boolean;
 }
+
+/**
+ * Input 模板
+ */
+export interface InputTemplate {
+  id: string; // 唯一标识符，预设模板使用 type，自定义模板使用 UUID
+  name: string; // 模板名称
+  type: PromptInputType; // 模板类型
+  isBuiltIn: boolean; // 是否为预设模板
+  config: Partial<PromptInput>; // 模板配置
+  createdAt?: number; // 创建时间戳
+  updatedAt?: number; // 更新时间戳
+}

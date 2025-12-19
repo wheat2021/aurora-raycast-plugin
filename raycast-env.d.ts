@@ -15,6 +15,8 @@ declare type Preferences = ExtensionPreferences
 declare namespace Preferences {
   /** Preferences accessible in the `manage-ai` command */
   export type ManageAi = ExtensionPreferences & {}
+  /** Preferences accessible in the `manage-input-templates` command */
+  export type ManageInputTemplates = ExtensionPreferences & {}
   /** Preferences accessible in the `processor-1` command */
   export type Processor1 = ExtensionPreferences & {
   /** Processor Name - Display name for this processor */
@@ -88,6 +90,8 @@ declare namespace Preferences {
 declare namespace Arguments {
   /** Arguments passed to the `manage-ai` command */
   export type ManageAi = {}
+  /** Arguments passed to the `manage-input-templates` command */
+  export type ManageInputTemplates = {}
   /** Arguments passed to the `processor-1` command */
   export type Processor1 = {}
   /** Arguments passed to the `processor-2` command */

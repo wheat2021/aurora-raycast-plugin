@@ -93,6 +93,98 @@ function buildQueryString(
 }
 
 /**
+ * 生成 curl 命令
+ * @param config 请求配置
+ * @param values 用户输入的表单值
+ * @param visibleInputIds 当前可见的字段 ID 集合
+ * @param inputs 输入字段配置列表
+ * @returns curl 命令字符串
+ */
+export function generateCurlCommand(
+  config: RequestConfig,
+  values: PromptValues,
+  visibleInputIds: Set<string>,
+  inputs: PromptInput[],
+): string {
+  // 替换 URL 中的变量
+  let url = replaceVariables(config.url, values, visibleInputIds, inputs);
+
+  // 处理 query 参数
+  if (config.query) {
+    const query: Record<string, string | number | boolean> = {};
+
+    for (const [key, value] of Object.entries(config.query)) {
+      if (typeof value === "string") {
+        query[key] = replaceVariables(value, values, visibleInputIds, inputs);
+      } else {
+        query[key] = value;
+      }
+    }
+
+    const queryString = buildQueryString(query);
+    if (queryString) {
+      url += (url.includes("?") ? "&" : "?") + queryString;
+    }
+  }
+
+  // 构建 curl 命令
+  const curlParts: string[] = ["curl"];
+
+  // 添加 method
+  if (config.method !== "GET") {
+    curlParts.push(`-X ${config.method}`);
+  }
+
+  // 添加 headers
+  if (config.headers) {
+    for (const [key, value] of Object.entries(config.headers)) {
+      const replacedValue = replaceVariables(
+        value,
+        values,
+        visibleInputIds,
+        inputs,
+      );
+      // 使用单引号包裹，并转义其中的单引号
+      const escapedValue = replacedValue.replace(/'/g, "'\\''");
+      curlParts.push(`-H '${key}: ${escapedValue}'`);
+    }
+  }
+
+  // 添加 body
+  if (config.body) {
+    let bodyString: string;
+
+    if (typeof config.body === "string") {
+      // 如果 body 是字符串，直接替换变量
+      bodyString = replaceVariables(config.body, values, visibleInputIds, inputs);
+    } else {
+      // 如果 body 是对象，递归替换变量后转为 JSON
+      const replacedBody = replaceObjectVariables(
+        config.body,
+        values,
+        visibleInputIds,
+        inputs,
+      );
+      bodyString = JSON.stringify(replacedBody);
+
+      // 如果未设置 Content-Type，添加 JSON Content-Type
+      if (!config.headers || !config.headers["Content-Type"]) {
+        curlParts.push(`-H 'Content-Type: application/json'`);
+      }
+    }
+
+    // 转义单引号
+    const escapedBody = bodyString.replace(/'/g, "'\\''");
+    curlParts.push(`-d '${escapedBody}'`);
+  }
+
+  // 添加 URL（放在最后）
+  curlParts.push(`'${url}'`);
+
+  return curlParts.join(" \\\n  ");
+}
+
+/**
  * 执行 REST API 请求
  * @param config 请求配置
  * @param values 用户输入的表单值

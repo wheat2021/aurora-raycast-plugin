@@ -18,7 +18,7 @@ import { InputConfigForm } from "./InputConfigForm";
 import { OptionListManager } from "./InputConfigForm";
 import { savePromptConfig } from "../utils/configWriter";
 import { executeCommand } from "../utils/commandExecutor";
-import { executeRequest } from "../utils/requestExecutor";
+import { executeRequest, generateCurlCommand } from "../utils/requestExecutor";
 import { RequestResult } from "./RequestResult";
 import { CommandResult } from "./CommandResult";
 
@@ -303,41 +303,19 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
 
     const visibleInputIds = getVisibleInputIds(config.inputs, values);
 
-    // Request 模式：复制完整请求信息
+    // Request 模式：复制 curl 命令
     if (config.request) {
-      const replacedUrl = replaceTemplate(
-        config.request.url,
+      const curlCommand = generateCurlCommand(
+        config.request,
         values,
         visibleInputIds,
         config.inputs,
       );
 
-      // 处理 body：如果是字符串则进行变量替换，如果是对象则直接使用
-      let processedBody: string | Record<string, unknown> | undefined;
-      if (config.request.body) {
-        if (typeof config.request.body === "string") {
-          processedBody = replaceTemplate(
-            config.request.body,
-            values,
-            visibleInputIds,
-            config.inputs,
-          );
-        } else {
-          processedBody = config.request.body;
-        }
-      }
-
-      const requestInfo = {
-        method: config.request.method,
-        url: replacedUrl,
-        headers: config.request.headers || {},
-        body: processedBody,
-      };
-
-      await Clipboard.copy(JSON.stringify(requestInfo, null, 2));
+      await Clipboard.copy(curlCommand);
       await showToast({
         style: Toast.Style.Success,
-        title: "已复制请求信息到剪贴板",
+        title: "已复制 curl 命令到剪贴板",
       });
       return;
     }
@@ -395,7 +373,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     if (config.request) {
       return {
         primary: "执行请求",
-        secondary: "复制请求信息",
+        secondary: "复制 curl 命令",
       };
     }
     if (config.command) {

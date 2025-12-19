@@ -100,6 +100,12 @@ export function RequestResult(props: RequestResultProps) {
       markdown={markdown}
       actions={
         <ActionPanel>
+          <Action.CopyToClipboard
+            title="复制 URL"
+            content={url}
+            icon={Icon.Link}
+            shortcut={{ modifiers: ["cmd"], key: "u" }}
+          />
           {data !== undefined && data !== null && (
             <>
               <Action.CopyToClipboard
@@ -145,7 +151,15 @@ export function RequestResult(props: RequestResultProps) {
           )}
           <Detail.Metadata.Separator />
           <Detail.Metadata.Label title="请求方法" text={method} />
-          <Detail.Metadata.Label title="请求 URL" text={url} />
+          <Detail.Metadata.Label
+            title="请求 URL"
+            text={url}
+            icon={Icon.Link}
+          />
+          <Detail.Metadata.Label
+            title="💡 提示"
+            text="按 ⌘U 复制 URL"
+          />
           {headers && Object.keys(headers).length > 0 && (
             <>
               <Detail.Metadata.Separator />

@@ -1,4 +1,4 @@
-import { Detail, ActionPanel, Action } from "@raycast/api";
+import { Detail, ActionPanel, Action, Icon } from "@raycast/api";
 
 interface CommandResultProps {
   success: boolean;
@@ -66,6 +66,18 @@ export function CommandResult({
       markdown={markdown}
       actions={
         <ActionPanel>
+          <Action.CopyToClipboard
+            title="复制命令行路径"
+            content={commandLine}
+            icon={Icon.Terminal}
+            shortcut={{ modifiers: ["cmd"], key: "l" }}
+          />
+          <Action.CopyToClipboard
+            title="复制完整命令"
+            content={fullCommand}
+            icon={Icon.Clipboard}
+            shortcut={{ modifiers: ["cmd", "shift"], key: "l" }}
+          />
           {stdout && stdout.trim() && (
             <Action.CopyToClipboard
               title="复制标准输出"
@@ -80,12 +92,38 @@ export function CommandResult({
               shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
             />
           )}
-          <Action.CopyToClipboard
-            title="复制完整命令"
-            content={fullCommand}
-            shortcut={{ modifiers: ["cmd"], key: "l" }}
-          />
         </ActionPanel>
+      }
+      metadata={
+        <Detail.Metadata>
+          <Detail.Metadata.Label
+            title="状态"
+            text={success ? "成功" : "失败"}
+            icon={success ? Icon.CheckCircle : Icon.XMarkCircle}
+          />
+          {exitCode !== undefined && (
+            <Detail.Metadata.Label
+              title="退出码"
+              text={String(exitCode)}
+            />
+          )}
+          <Detail.Metadata.Separator />
+          <Detail.Metadata.Label
+            title="命令行路径"
+            text={commandLine}
+            icon={Icon.Terminal}
+          />
+          {args && args.length > 0 && (
+            <Detail.Metadata.Label
+              title="参数"
+              text={args.join(" ")}
+            />
+          )}
+          <Detail.Metadata.Label
+            title="💡 提示"
+            text="按 ⌘L 复制命令行路径"
+          />
+        </Detail.Metadata>
       }
     />
   );

@@ -26,6 +26,7 @@ export interface PromptInput {
   id: string;
   label: string;
   type: PromptInputType;
+  copy?: PromptInputType; // 从模板复制配置（仅在配置文件中使用，处理后会被移除）
   required?: boolean;
   default?: string | string[] | boolean;
   description?: string;

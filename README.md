@@ -7,6 +7,7 @@ Aurora Input Processor - 支持多文件夹的提示词处理器。
 ✅ **Markdown 配置** - 使用 Markdown 文件（YAML frontmatter + 正文）定义提示词
 ✅ **动态变量输入** - 根据 frontmatter 中定义的变量生成表单
 ✅ **多种输入类型** - 支持 text、textarea、select、multiselect、checkbox、selectInFolder
+✅ **Input 模板复制** - 使用 `copy` 属性快速从预定义模板复制字段配置（[详细文档](docs/input-templates.md)）
 ✅ **目录选择器** - selectInFolder 支持从文件系统读取文件/目录，支持类型过滤和正则表达式过滤
 ✅ **条件字段** - 支持 extraInputs 机制，根据选项动态显示字段
 ✅ **模板替换** - {{variable}} 语法替换变量生成最终提示词

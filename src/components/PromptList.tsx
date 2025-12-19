@@ -1,7 +1,9 @@
 import { Action, ActionPanel, List, Icon } from "@raycast/api";
+import { useEffect, useState } from "react";
 import { loadPromptsFromDirectory } from "../config/prompts";
 import { PromptForm } from "./PromptForm";
 import { ProcessorConfig } from "../types/processor";
+import { PromptConfig } from "../types/prompt";
 
 interface PromptListProps {
   processor: ProcessorConfig;
@@ -24,10 +26,30 @@ function encodePathForObsidian(filePath: string): string {
 }
 
 export function PromptList({ processor }: PromptListProps) {
-  const prompts = loadPromptsFromDirectory(processor.directory);
+  const [prompts, setPrompts] = useState<PromptConfig[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadPrompts() {
+      setIsLoading(true);
+      try {
+        const loadedPrompts = await loadPromptsFromDirectory(
+          processor.directory,
+        );
+        setPrompts(loadedPrompts);
+      } catch (error) {
+        console.error("加载提示词失败:", error);
+        setPrompts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadPrompts();
+  }, [processor.directory]);
 
   return (
-    <List navigationTitle={processor.name}>
+    <List navigationTitle={processor.name} isLoading={isLoading}>
       {prompts.map((prompt, index) => (
         <List.Item
           key={index}

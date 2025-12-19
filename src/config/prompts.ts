@@ -1,7 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import matter from "gray-matter";
-import { PromptConfig, PromptInput } from "../types/prompt";
+import { PromptConfig, PromptInput, PromptInputType } from "../types/prompt";
+import { mergeInputsWithTemplates } from "./inputTemplates";
 
 /**
  * 解析 Obsidian 引用格式 ![[filename]]
@@ -67,7 +68,9 @@ function resolveObsidianReferences(
 /**
  * 从指定目录加载所有提示词配置
  */
-export function loadPromptsFromDirectory(directory: string): PromptConfig[] {
+export async function loadPromptsFromDirectory(
+  directory: string,
+): Promise<PromptConfig[]> {
   const promptsDir = directory;
 
   // 检查目录是否存在
@@ -103,13 +106,16 @@ export function loadPromptsFromDirectory(directory: string): PromptConfig[] {
         rulesDir,
       );
 
+      // 验证并处理 inputs（现在是异步的）
+      const validatedInputs = await validateInputs(parsed.data.inputs);
+
       const promptConfig: PromptConfig = {
         title: parsed.data.title,
         formDescription: parsed.data.formDescription,
         execScript: parsed.data.execScript,
         command: parsed.data.command,
         request: parsed.data.request,
-        inputs: validateInputs(parsed.data.inputs),
+        inputs: validatedInputs,
         content: resolvedContent,
         filePath,
         lastUseTime: parsed.data.lastUseTime,
@@ -134,29 +140,41 @@ export function loadPromptsFromDirectory(directory: string): PromptConfig[] {
 
 /**
  * 验证并规范化输入字段配置
+ * 支持通过 copy 属性从模板复制配置
  */
-function validateInputs(inputs: unknown[]): PromptInput[] {
+async function validateInputs(inputs: unknown[]): Promise<PromptInput[]> {
   if (!Array.isArray(inputs)) {
     return [];
   }
 
-  return inputs
+  // 第一步：处理 copy 属性，合并模板
+  const inputsWithCopy = inputs.map((input) => {
+    if (
+      input &&
+      typeof input === "object" &&
+      "copy" in input &&
+      typeof input.copy === "string"
+    ) {
+      // 包含 copy 属性
+      return input as Partial<PromptInput> & { copy: PromptInputType };
+    }
+    // 没有 copy 属性，直接返回
+    return input as Partial<PromptInput>;
+  });
+
+  // 使用模板合并工具批量处理
+  const mergedInputs = await mergeInputsWithTemplates(inputsWithCopy);
+
+  // 第二步：规范化和验证
+  return mergedInputs
     .filter((input) => {
-      // 必须包含 id, label, type
-      return (
-        input &&
-        typeof input === "object" &&
-        "id" in input &&
-        "label" in input &&
-        "type" in input
-      );
+      // 确保必填字段存在
+      return input && input.id && input.label && input.type;
     })
     .map((input) => {
-      const promptInput = input as PromptInput;
-
       // 规范化 options
-      if (promptInput.options) {
-        promptInput.options = promptInput.options.map((option) => ({
+      if (input.options) {
+        input.options = input.options.map((option) => ({
           value: option.value,
           label: option.label || option.value, // 默认使用 value 作为 label
           isDefault: option.isDefault,
@@ -164,6 +182,11 @@ function validateInputs(inputs: unknown[]): PromptInput[] {
         }));
       }
 
-      return promptInput;
+      // 移除 copy 属性（如果还存在）
+      const { copy, ...cleanInput } = input as PromptInput & {
+        copy?: PromptInputType;
+      };
+
+      return cleanInput as PromptInput;
     });
 }

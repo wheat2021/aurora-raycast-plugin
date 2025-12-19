@@ -157,13 +157,18 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     );
   };
 
-  // Enter 键触发：验证表单 → 根据配置决定执行 API 请求、脚本或粘贴内容
-  const handlePaste = async (values: PromptValues) => {
+  // Primary Action (Cmd+Enter)：根据配置模式执行不同操作
+  // - 普通模式：粘贴到应用
+  // - Request 模式：执行请求
+  // - Command 模式：执行命令
+  const handlePrimaryAction = async (values: PromptValues) => {
     if (!validateForm(values)) {
       return;
     }
 
-    // 如果配置了 request，执行 REST API 请求而非粘贴内容
+    const visibleInputIds = getVisibleInputIds(config.inputs, values);
+
+    // Request 模式：执行 REST API 请求
     if (config.request) {
       const toast = await showToast({
         style: Toast.Style.Animated,
@@ -171,7 +176,6 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
       });
 
       try {
-        const visibleInputIds = getVisibleInputIds(config.inputs, values);
         const response = await executeRequest(
           config.request,
           values,
@@ -182,11 +186,10 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         toast.style = Toast.Style.Success;
         toast.title = `请求成功 (${response.status})`;
 
-        // 设置请求结果状态，显示结果页面
         setRequestResult({
           success: true,
           method: config.request.method,
-          url: response.url, // 使用替换后的 URL
+          url: response.url,
           status: response.status,
           statusText: response.statusText,
           headers: response.headers,
@@ -196,8 +199,6 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         toast.style = Toast.Style.Failure;
         toast.title = "请求失败";
 
-        // 获取替换后的 URL（用于错误显示）
-        const visibleInputIds = getVisibleInputIds(config.inputs, values);
         const replacedUrl = replaceTemplate(
           config.request.url,
           values,
@@ -205,18 +206,17 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
           config.inputs,
         );
 
-        // 设置请求结果状态，显示错误页面
         setRequestResult({
           success: false,
           method: config.request.method,
-          url: replacedUrl, // 使用替换后的 URL
+          url: replacedUrl,
           error: error instanceof Error ? error.message : "未知错误",
         });
       }
       return;
     }
 
-    // 如果配置了 command，执行命令而非粘贴内容
+    // Command 模式：执行命令
     if (config.command) {
       const toast = await showToast({
         style: Toast.Style.Animated,
@@ -224,7 +224,6 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
       });
 
       try {
-        const visibleInputIds = getVisibleInputIds(config.inputs, values);
         const { stdout, stderr } = await executeCommand(
           config.command,
           values,
@@ -235,7 +234,6 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         toast.style = Toast.Style.Success;
         toast.title = "命令执行成功";
 
-        // 设置命令结果状态，显示结果页面
         setCommandResult({
           success: true,
           commandLine: config.command.commandLine,
@@ -248,7 +246,6 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         toast.style = Toast.Style.Failure;
         toast.title = "命令执行失败";
 
-        // 设置命令结果状态，显示错误页面
         setCommandResult({
           success: false,
           commandLine: config.command.commandLine,
@@ -259,129 +256,98 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
       return;
     }
 
-    // 原有逻辑：生成提示词并粘贴
+    // 普通模式：生成提示词并粘贴到应用
     const prompt = await generatePrompt(values);
     await Clipboard.paste(prompt);
     await showToast({
       style: Toast.Style.Success,
       title: "已粘贴到当前应用",
     });
-
-    // 返回文件列表
     await popToRoot();
   };
 
-  // Cmd+Enter 快捷键触发：验证表单 → 根据配置决定执行 API 请求、脚本或复制内容
-  const handleCopy = async (values: PromptValues) => {
+  // Secondary Action (Cmd+Shift+Enter)：根据配置模式执行不同操作
+  // - 普通模式：复制到剪贴板
+  // - Request 模式：复制完整请求信息到剪贴板
+  // - Command 模式：复制完整命令到剪贴板
+  const handleSecondaryAction = async (values: PromptValues) => {
     if (!validateForm(values)) {
       return;
     }
 
-    // 如果配置了 request，执行 REST API 请求而非复制内容
+    const visibleInputIds = getVisibleInputIds(config.inputs, values);
+
+    // Request 模式：复制完整请求信息
     if (config.request) {
-      const toast = await showToast({
-        style: Toast.Style.Animated,
-        title: "正在发送请求...",
-      });
+      const replacedUrl = replaceTemplate(
+        config.request.url,
+        values,
+        visibleInputIds,
+        config.inputs,
+      );
 
-      try {
-        const visibleInputIds = getVisibleInputIds(config.inputs, values);
-        const response = await executeRequest(
-          config.request,
-          values,
-          visibleInputIds,
-          config.inputs,
-        );
-
-        toast.style = Toast.Style.Success;
-        toast.title = `请求成功 (${response.status})`;
-
-        // 设置请求结果状态，显示结果页面
-        setRequestResult({
-          success: true,
-          method: config.request.method,
-          url: response.url, // 使用替换后的 URL
-          status: response.status,
-          statusText: response.statusText,
-          headers: response.headers,
-          data: response.data,
-        });
-      } catch (error) {
-        toast.style = Toast.Style.Failure;
-        toast.title = "请求失败";
-
-        // 获取替换后的 URL（用于错误显示）
-        const visibleInputIds = getVisibleInputIds(config.inputs, values);
-        const replacedUrl = replaceTemplate(
-          config.request.url,
-          values,
-          visibleInputIds,
-          config.inputs,
-        );
-
-        // 设置请求结果状态，显示错误页面
-        setRequestResult({
-          success: false,
-          method: config.request.method,
-          url: replacedUrl, // 使用替换后的 URL
-          error: error instanceof Error ? error.message : "未知错误",
-        });
+      // 处理 body：如果是字符串则进行变量替换，如果是对象则直接使用
+      let processedBody: string | Record<string, unknown> | undefined;
+      if (config.request.body) {
+        if (typeof config.request.body === "string") {
+          processedBody = replaceTemplate(
+            config.request.body,
+            values,
+            visibleInputIds,
+            config.inputs,
+          );
+        } else {
+          processedBody = config.request.body;
+        }
       }
+
+      const requestInfo = {
+        method: config.request.method,
+        url: replacedUrl,
+        headers: config.request.headers || {},
+        body: processedBody,
+      };
+
+      await Clipboard.copy(JSON.stringify(requestInfo, null, 2));
+      await showToast({
+        style: Toast.Style.Success,
+        title: "已复制请求信息到剪贴板",
+      });
       return;
     }
 
-    // 如果配置了 command，执行命令而非复制内容
+    // Command 模式：复制完整命令
     if (config.command) {
-      const toast = await showToast({
-        style: Toast.Style.Animated,
-        title: "正在执行命令...",
+      const replacedCommandLine = replaceTemplate(
+        config.command.commandLine,
+        values,
+        visibleInputIds,
+        config.inputs,
+      );
+
+      const replacedArgs = config.command.args?.map((arg) =>
+        replaceTemplate(arg, values, visibleInputIds, config.inputs),
+      );
+
+      const fullCommand = replacedArgs
+        ? `${replacedCommandLine} ${replacedArgs.join(" ")}`
+        : replacedCommandLine;
+
+      await Clipboard.copy(fullCommand);
+      await showToast({
+        style: Toast.Style.Success,
+        title: "已复制命令到剪贴板",
       });
-
-      try {
-        const visibleInputIds = getVisibleInputIds(config.inputs, values);
-        const { stdout, stderr } = await executeCommand(
-          config.command,
-          values,
-          visibleInputIds,
-          config.inputs,
-        );
-
-        toast.style = Toast.Style.Success;
-        toast.title = "命令执行成功";
-
-        // 设置命令结果状态，显示结果页面
-        setCommandResult({
-          success: true,
-          commandLine: config.command.commandLine,
-          args: config.command.args,
-          exitCode: 0,
-          stdout,
-          stderr,
-        });
-      } catch (error) {
-        toast.style = Toast.Style.Failure;
-        toast.title = "命令执行失败";
-
-        // 设置命令结果状态，显示错误页面
-        setCommandResult({
-          success: false,
-          commandLine: config.command.commandLine,
-          args: config.command.args,
-          error: error instanceof Error ? error.message : "未知错误",
-        });
-      }
       return;
     }
 
-    // 原有逻辑：生成提示词并复制
+    // 普通模式：复制提示词到剪贴板
     const prompt = await generatePrompt(values);
     await Clipboard.copy(prompt);
     await showToast({
       style: Toast.Style.Success,
       title: "已复制到剪贴板",
     });
-
-    // 返回文件列表
     await popToRoot();
   };
 
@@ -397,6 +363,28 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
 
   // 根据当前表单值和 extraInputs 配置，实时计算应该显示的字段列表（某些字段仅在特定选项被选中时显示）
   const visibleInputs = getVisibleInputs(config.inputs, formValues);
+
+  // 根据配置模式动态确定 Action 标题
+  const getActionTitles = () => {
+    if (config.request) {
+      return {
+        primary: "执行请求",
+        secondary: "复制请求信息",
+      };
+    }
+    if (config.command) {
+      return {
+        primary: "执行命令",
+        secondary: "复制命令",
+      };
+    }
+    return {
+      primary: "粘贴到应用",
+      secondary: "复制到剪贴板",
+    };
+  };
+
+  const actionTitles = getActionTitles();
 
   // 保存字段配置的回调函数
   const handleSaveInput = async (updatedInput: PromptInput) => {
@@ -440,14 +428,14 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
       actions={
         <ActionPanel>
           <Action.SubmitForm
-            title="粘贴到应用"
-            onSubmit={handlePaste}
-            shortcut={{ modifiers: [], key: "return" }}
+            title={actionTitles.primary}
+            onSubmit={handlePrimaryAction}
+            // Form 中 primary action 自动使用 Cmd+Enter
           />
           <Action.SubmitForm
-            title="复制到剪贴板"
-            onSubmit={handleCopy}
-            shortcut={{ modifiers: ["cmd"], key: "return" }}
+            title={actionTitles.secondary}
+            onSubmit={handleSecondaryAction}
+            // Form 中 secondary action 自动使用 Cmd+Shift+Enter
           />
           <ActionPanel.Section title="字段配置">
             <ActionPanel.Submenu

@@ -100,38 +100,50 @@ export function RequestResult(props: RequestResultProps) {
       markdown={markdown}
       actions={
         <ActionPanel>
+          {/* 错误信息复制 - 失败时优先显示 */}
+          {!success && error && (
+            <Action.CopyToClipboard
+              title="复制错误信息"
+              content={error}
+              icon={Icon.ExclamationMark}
+              shortcut={{ modifiers: ["cmd"], key: "e" }}
+            />
+          )}
+          {/* 响应数据复制 - 成功时优先显示 */}
+          {success && data !== undefined && data !== null && (
+            <>
+              <Action.CopyToClipboard
+                title="复制响应数据"
+                content={formatData(data)}
+                icon={Icon.Text}
+                shortcut={{ modifiers: ["cmd"], key: "c" }}
+              />
+              <Action.Paste
+                title="粘贴响应数据"
+                content={formatData(data)}
+                icon={Icon.Clipboard}
+                shortcut={{ modifiers: ["cmd"], key: "v" }}
+              />
+            </>
+          )}
           <Action.CopyToClipboard
             title="复制 URL"
             content={url}
             icon={Icon.Link}
             shortcut={{ modifiers: ["cmd"], key: "u" }}
           />
-          {data !== undefined && data !== null && (
-            <>
-              <Action.CopyToClipboard
-                title="复制响应数据"
-                content={formatData(data)}
-                shortcut={{ modifiers: ["cmd"], key: "c" }}
-              />
-              <Action.Paste
-                title="粘贴响应数据"
-                content={formatData(data)}
-                shortcut={{ modifiers: ["cmd"], key: "v" }}
-              />
-            </>
-          )}
-          {error && (
+          {/* 其他复制选项 */}
+          {!success && data !== undefined && data !== null && (
             <Action.CopyToClipboard
-              title="复制错误信息"
-              content={error}
-              icon={Icon.ExclamationMark}
-              shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
+              title="复制响应数据"
+              content={formatData(data)}
+              icon={Icon.Text}
             />
           )}
           <Action.CopyToClipboard
             title="复制完整结果"
             content={markdown}
-            icon={Icon.Clipboard}
+            icon={Icon.Document}
             shortcut={{ modifiers: ["cmd", "shift"], key: "a" }}
           />
         </ActionPanel>
@@ -152,7 +164,14 @@ export function RequestResult(props: RequestResultProps) {
           <Detail.Metadata.Separator />
           <Detail.Metadata.Label title="请求方法" text={method} />
           <Detail.Metadata.Label title="请求 URL" text={url} icon={Icon.Link} />
-          <Detail.Metadata.Label title="💡 提示" text="按 ⌘U 复制 URL" />
+          <Detail.Metadata.Label
+            title="💡 提示"
+            text={
+              success
+                ? "⌘C 复制数据 | ⌘U 复制URL"
+                : "⌘E 复制错误 | ⌘U 复制URL"
+            }
+          />
           {headers && Object.keys(headers).length > 0 && (
             <>
               <Detail.Metadata.Separator />

@@ -159,13 +159,35 @@ export async function executeCommand(
   }
 
   // 合并当前进程的环境变量和命令专用环境变量
-  const env = {
+  const env: NodeJS.ProcessEnv = {
     ...process.env,
     ...scriptEnv,
     // 统一注入常用环境变量（避免 Raycast 不继承 shell 环境变量）
     LIB_SH: process.env.LIB_SH || "/Users/terrychen/code/sh/lib.sh",
     SCRIPT_DIR: process.env.SCRIPT_DIR || "/Users/terrychen/code/sh",
   };
+
+  // 确保 PATH 包含常用路径（Raycast 可能不继承完整的 shell PATH）
+  const pathDirs = [
+    "/opt/homebrew/bin",
+    "/usr/local/bin",
+    "/usr/bin",
+    "/bin",
+    "/usr/sbin",
+    "/sbin",
+  ];
+
+  // 如果当前 PATH 中没有这些路径,添加它们
+  const currentPath = env.PATH || "";
+  const missingPaths = pathDirs.filter(
+    (dir) => !currentPath.split(":").includes(dir),
+  );
+
+  if (missingPaths.length > 0) {
+    env.PATH = currentPath
+      ? `${missingPaths.join(":")}:${currentPath}`
+      : missingPaths.join(":");
+  }
 
   // 替换 cwd 中的变量
   const cwd = config.cwd
@@ -199,11 +221,39 @@ export async function executeCommand(
         message: string;
       };
 
-      throw new Error(
-        `命令执行失败 (exit code ${execError.code || "unknown"}): ${
-          execError.stderr || execError.message
-        }`,
+      // 构建详细的错误信息,包含所有可用的输出
+      const errorParts: string[] = [];
+
+      // 添加基本错误信息
+      errorParts.push(
+        `命令执行失败 (exit code ${execError.code || "unknown"})`,
       );
+
+      // 添加 stderr(如果有)
+      if (execError.stderr && execError.stderr.trim()) {
+        errorParts.push(`\n\n标准错误输出:\n${execError.stderr.trim()}`);
+      }
+
+      // 添加 stdout(如果有)
+      if (execError.stdout && execError.stdout.trim()) {
+        errorParts.push(`\n\n标准输出:\n${execError.stdout.trim()}`);
+      }
+
+      // 如果既没有 stderr 也没有 stdout,使用原始错误消息
+      if (
+        (!execError.stderr || !execError.stderr.trim()) &&
+        (!execError.stdout || !execError.stdout.trim())
+      ) {
+        errorParts.push(`\n\n${execError.message}`);
+      }
+
+      // 创建增强的错误对象,包含原始的 stdout 和 stderr
+      const enhancedError = new Error(errorParts.join(""));
+      (enhancedError as unknown as typeof execError).code = execError.code;
+      (enhancedError as unknown as typeof execError).stdout = execError.stdout;
+      (enhancedError as unknown as typeof execError).stderr = execError.stderr;
+
+      throw enhancedError;
     }
     throw error;
   }

@@ -270,10 +270,21 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         toast.style = Toast.Style.Failure;
         toast.title = "命令执行失败";
 
+        // 从错误对象中提取 stdout、stderr 和 exitCode
+        const execError = error as {
+          message: string;
+          code?: number;
+          stdout?: string;
+          stderr?: string;
+        };
+
         setCommandResult({
           success: false,
           commandLine: config.command.commandLine,
           args: config.command.args,
+          exitCode: execError.code,
+          stdout: execError.stdout,
+          stderr: execError.stderr,
           error: error instanceof Error ? error.message : "未知错误",
         });
       }

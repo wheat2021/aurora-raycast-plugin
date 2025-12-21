@@ -66,30 +66,50 @@ export function CommandResult({
       markdown={markdown}
       actions={
         <ActionPanel>
+          {/* 错误信息复制 - 失败时优先显示 */}
+          {!success && error && (
+            <Action.CopyToClipboard
+              title="复制错误信息"
+              content={error}
+              icon={Icon.ExclamationMark}
+              shortcut={{ modifiers: ["cmd"], key: "e" }}
+            />
+          )}
+          {/* 标准输出复制 - 成功时优先显示 */}
+          {success && stdout && stdout.trim() && (
+            <Action.CopyToClipboard
+              title="复制标准输出"
+              content={stdout}
+              icon={Icon.Text}
+              shortcut={{ modifiers: ["cmd"], key: "c" }}
+            />
+          )}
           <Action.CopyToClipboard
-            title="复制命令行路径"
-            content={commandLine}
+            title="复制完整命令"
+            content={fullCommand}
             icon={Icon.Terminal}
             shortcut={{ modifiers: ["cmd"], key: "l" }}
           />
           <Action.CopyToClipboard
-            title="复制完整命令"
-            content={fullCommand}
-            icon={Icon.Clipboard}
+            title="复制命令行路径"
+            content={commandLine}
+            icon={Icon.Snippets}
             shortcut={{ modifiers: ["cmd", "shift"], key: "l" }}
           />
-          {stdout && stdout.trim() && (
+          {/* 其他输出复制选项 */}
+          {!success && stdout && stdout.trim() && (
             <Action.CopyToClipboard
               title="复制标准输出"
               content={stdout}
-              shortcut={{ modifiers: ["cmd"], key: "c" }}
+              icon={Icon.Text}
             />
           )}
           {stderr && stderr.trim() && (
             <Action.CopyToClipboard
               title="复制标准错误"
               content={stderr}
-              shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
+              icon={Icon.Warning}
+              shortcut={{ modifiers: ["cmd", "shift"], key: "e" }}
             />
           )}
         </ActionPanel>
@@ -113,7 +133,14 @@ export function CommandResult({
           {args && args.length > 0 && (
             <Detail.Metadata.Label title="参数" text={args.join(" ")} />
           )}
-          <Detail.Metadata.Label title="💡 提示" text="按 ⌘L 复制命令行路径" />
+          <Detail.Metadata.Label
+            title="💡 提示"
+            text={
+              success
+                ? "⌘C 复制输出 | ⌘L 复制命令"
+                : "⌘E 复制错误 | ⌘L 复制命令"
+            }
+          />
         </Detail.Metadata>
       }
     />

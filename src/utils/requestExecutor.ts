@@ -21,7 +21,8 @@ function replaceVariables(
     inputMap.set(input.id, input);
   });
 
-  return template.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
+  // 使用 [\w-]+ 支持包含连字符的变量名，如 model-htsc
+  return template.replace(/\{\{([\w-]+)\}\}/g, (match, varName) => {
     // 只替换可见字段的值
     if (!visibleInputIds.has(varName)) {
       return "";

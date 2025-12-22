@@ -32,7 +32,8 @@ export function replaceTemplate(
   });
 
   // 2. 替换用户自定义变量 {{variable}}
-  result = result.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
+  // 使用 [\w-]+ 支持包含连字符的变量名，如 model-htsc
+  result = result.replace(/\{\{([\w-]+)\}\}/g, (match, varName) => {
     // 如果变量对应的字段不在可见字段列表中，返回空字符串
     if (!visibleInputIds.has(varName)) {
       return "";

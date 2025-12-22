@@ -167,9 +167,7 @@ export function RequestResult(props: RequestResultProps) {
           <Detail.Metadata.Label
             title="💡 提示"
             text={
-              success
-                ? "⌘C 复制数据 | ⌘U 复制URL"
-                : "⌘E 复制错误 | ⌘U 复制URL"
+              success ? "⌘C 复制数据 | ⌘U 复制URL" : "⌘E 复制错误 | ⌘U 复制URL"
             }
           />
           {headers && Object.keys(headers).length > 0 && (

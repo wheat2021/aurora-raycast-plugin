@@ -110,6 +110,7 @@ export async function loadPromptsFromDirectory(
       const validatedInputs = await validateInputs(parsed.data.inputs);
 
       const promptConfig: PromptConfig = {
+        id: filePath, // 使用文件路径作为唯一标识符
         title: parsed.data.title,
         formDescription: parsed.data.formDescription,
         execScript: parsed.data.execScript,

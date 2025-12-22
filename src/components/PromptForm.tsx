@@ -8,6 +8,8 @@ import {
   Icon,
   popToRoot,
   getSelectedText,
+  closeMainWindow,
+  LaunchProps,
 } from "@raycast/api";
 import { useState, useEffect } from "react";
 import { PromptConfig, PromptValues, PromptInput } from "../types/prompt";
@@ -21,9 +23,15 @@ import { executeCommand } from "../utils/commandExecutor";
 import { executeRequest, generateCurlCommand } from "../utils/requestExecutor";
 import { RequestResult } from "./RequestResult";
 import { CommandResult } from "./CommandResult";
+import {
+  saveRequestResult,
+  getRequestResult,
+  clearRequestResult,
+} from "../utils/requestCache";
 
 interface PromptFormProps {
   config: PromptConfig;
+  launchContext?: LaunchProps["launchContext"];
 }
 
 interface RequestResultState {
@@ -47,7 +55,7 @@ interface CommandResultState {
   error?: string;
 }
 
-export function PromptForm({ config: initialConfig }: PromptFormProps) {
+export function PromptForm({ config: initialConfig, launchContext }: PromptFormProps) {
   // 使用状态管理配置，以便保存后能刷新
   const [config, setConfig] = useState<PromptConfig>(initialConfig);
   const [formValues, setFormValues] = useState<PromptValues>({});
@@ -192,9 +200,13 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
 
     const visibleInputIds = getVisibleInputIds(config.inputs, values);
 
-    // Request 模式：执行 REST API 请求
+    // Request 模式：执行 REST API 请求（后台模式：关闭窗口后执行）
     if (config.request) {
-      const toast = await showToast({
+      // 先关闭窗口，释放屏幕空间
+      await closeMainWindow();
+
+      // 显示 Toast 通知（Toast 在窗口关闭后仍然可见）
+      const loadingToast = await showToast({
         style: Toast.Style.Animated,
         title: "正在发送请求...",
       });
@@ -216,6 +228,7 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
           clipboard = "";
         }
 
+        // 在后台执行请求
         const response = await executeRequest(
           config.request,
           values,
@@ -225,10 +238,8 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
           clipboard,
         );
 
-        toast.style = Toast.Style.Success;
-        toast.title = `请求成功 (${response.status})`;
-
-        setRequestResult({
+        // 保存结果到缓存
+        const resultData = {
           success: true,
           method: config.request.method,
           url: response.url,
@@ -236,11 +247,23 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
           statusText: response.statusText,
           headers: response.headers,
           data: response.data,
+        };
+
+        if (config.id) {
+          await saveRequestResult(config.id, resultData);
+        }
+
+        // 隐藏加载中的 Toast
+        loadingToast.hide();
+
+        // 显示成功 Toast，包含状态码信息
+        // 提示用户可以重新打开命令查看详细结果
+        await showToast({
+          style: Toast.Style.Success,
+          title: `请求成功 (${response.status})`,
+          message: `${config.request.method} ${new URL(response.url).pathname}\n重新打开命令可查看详细结果`,
         });
       } catch (error) {
-        toast.style = Toast.Style.Failure;
-        toast.title = "请求失败";
-
         // 读取当前选中的文本和剪贴板内容（用于错误时显示 URL）
         let selection = "";
         let clipboard = "";
@@ -266,11 +289,31 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
           clipboard,
         );
 
-        setRequestResult({
+        const errorData = {
           success: false,
           method: config.request.method,
           url: replacedUrl,
           error: error instanceof Error ? error.message : "未知错误",
+        };
+
+        if (config.id) {
+          await saveRequestResult(config.id, errorData);
+        }
+
+        // 隐藏加载中的 Toast
+        loadingToast.hide();
+
+        // 显示失败 Toast，包含错误信息摘要
+        // 提示用户可以重新打开命令查看详细错误
+        const errorMessage = error instanceof Error ? error.message : "未知错误";
+        const errorSummary = errorMessage.length > 100
+          ? errorMessage.substring(0, 100) + "..."
+          : errorMessage;
+
+        await showToast({
+          style: Toast.Style.Failure,
+          title: "请求失败",
+          message: `${errorSummary}\n重新打开命令可查看详细错误`,
         });
       }
       return;
@@ -423,7 +466,13 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
 
   // 如果有请求结果，显示结果页面
   if (requestResult) {
-    return <RequestResult {...requestResult} />;
+    return (
+      <RequestResult
+        {...requestResult}
+        promptId={config.id}
+        onBack={() => setRequestResult(null)}
+      />
+    );
   }
 
   // 如果有命令结果，显示结果页面
@@ -455,6 +504,31 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
   };
 
   const actionTitles = getActionTitles();
+
+  // 查看上次请求结果
+  const handleViewLastResult = async () => {
+    if (config.request && config.id) {
+      const cached = await getRequestResult(config.id);
+      if (cached) {
+        setRequestResult({
+          success: cached.result.success,
+          method: cached.result.method,
+          url: cached.result.url,
+          status: cached.result.status,
+          statusText: cached.result.statusText,
+          headers: cached.result.headers,
+          data: cached.result.data,
+          error: cached.result.error,
+        });
+      } else {
+        await showToast({
+          style: Toast.Style.Failure,
+          title: "无历史结果",
+          message: "还没有执行过此请求",
+        });
+      }
+    }
+  };
 
   // 保存字段配置的回调函数
   const handleSaveInput = async (updatedInput: PromptInput) => {
@@ -507,6 +581,17 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
             onSubmit={handleSecondaryAction}
             // Form 中 secondary action 自动使用 Cmd+Shift+Enter
           />
+          {/* Request 模式下显示查看历史结果 */}
+          {config.request && (
+            <ActionPanel.Section title="历史记录">
+              <Action
+                title="查看上次结果"
+                icon={Icon.Clock}
+                shortcut={{ modifiers: ["cmd"], key: "h" }}
+                onAction={handleViewLastResult}
+              />
+            </ActionPanel.Section>
+          )}
           <ActionPanel.Section title="字段配置">
             <ActionPanel.Submenu
               title="编辑字段配置"

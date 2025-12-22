@@ -72,6 +72,7 @@ export interface CommandConfig {
  * 提示词配置（从 Markdown frontmatter 解析）
  */
 export interface PromptConfig {
+  id?: string; // 可选：唯一标识符（通常使用文件路径），用于缓存等功能
   title: string;
   formDescription?: string; // 可选：表单整体说明文字
   execScript?: string; // 可选（已废弃）：指定脚本路径，建议使用 command

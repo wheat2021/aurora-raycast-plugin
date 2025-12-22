@@ -1,5 +1,6 @@
 import { Detail, ActionPanel, Action, Icon } from "@raycast/api";
 import { ShortcutsMetadata } from "./ShortcutsMetadata";
+import { MarkdownBuilder } from "../utils/markdownBuilder";
 
 interface RequestResultProps {
   success: boolean;
@@ -35,63 +36,55 @@ export function RequestResult(props: RequestResultProps) {
 
   // 构建 Markdown 内容
   const buildMarkdown = (): string => {
-    const sections: string[] = [];
+    const builder = new MarkdownBuilder();
 
     // 标题
-    if (success) {
-      sections.push(`# ✅ 请求成功\n`);
-    } else {
-      sections.push(`# ❌ 请求失败\n`);
-    }
-
-    // 请求信息
-    sections.push(`## 📤 请求信息\n`);
-    sections.push(`- **方法**: \`${method}\``);
-    sections.push(`- **URL**: \`${url}\``);
-
-    if (status !== undefined) {
-      sections.push(`- **状态码**: \`${status} ${statusText || ""}\``);
-    }
-
-    sections.push("");
-
-    // 错误信息（如果失败）
-    if (!success && error) {
-      sections.push(`## ⚠️ 错误信息\n`);
-      sections.push("```");
-      sections.push(error);
-      sections.push("```");
-      sections.push("");
-    }
-
-    // 响应头
-    if (headers && Object.keys(headers).length > 0) {
-      sections.push(`## 📋 响应头\n`);
-      sections.push("```json");
-      sections.push(JSON.stringify(headers, null, 2));
-      sections.push("```");
-      sections.push("");
-    }
+    builder.title(success ? '请求成功' : '请求失败', 1, success ? '✅' : '❌');
 
     // 响应数据
     if (data !== undefined && data !== null) {
-      sections.push(`## 📦 响应数据\n`);
-
       const formattedData = formatData(data);
+      const language = typeof data === "object" ? "json" : undefined;
 
-      // 判断是否为 JSON 格式
-      if (typeof data === "object") {
-        sections.push("```json");
-        sections.push(formattedData);
-        sections.push("```");
-      } else {
-        sections.push("```");
-        sections.push(formattedData);
-        sections.push("```");
-      }
+      builder
+        .heading('响应数据', '📦')
+        .codeBlock(formattedData, language);
     }
 
-    return sections.join("\n");
+    // 错误信息（如果失败）
+    if (!success && error) {
+      builder
+        .heading('错误信息', '⚠️')
+        .codeBlock(error)
+        .separator();
+    }
+
+    // 请求信息
+    const requestInfoItems = [
+      `${MarkdownBuilder.bold('方法')}: ${MarkdownBuilder.inlineCode(method)}`,
+      `${MarkdownBuilder.bold('URL')}: ${MarkdownBuilder.inlineCode(url)}`,
+    ];
+
+    if (status !== undefined) {
+      requestInfoItems.push(
+        `${MarkdownBuilder.bold('状态码')}: ${MarkdownBuilder.inlineCode(`${status} ${statusText || ""}`)}`
+      );
+    }
+
+    builder
+      .heading('请求信息', '📤')
+      .list(requestInfoItems)
+      .separator();
+
+    // 响应头
+    if (headers && Object.keys(headers).length > 0) {
+      builder
+        .heading('响应头', '📋')
+        .codeBlock(JSON.stringify(headers, null, 2), 'json')
+        .separator();
+    }
+
+    return builder.build();
   };
 
   const markdown = buildMarkdown();
@@ -162,9 +155,6 @@ export function RequestResult(props: RequestResultProps) {
               text={`${status} ${statusText || ""}`}
             />
           )}
-          <Detail.Metadata.Separator />
-          <Detail.Metadata.Label title="请求方法" text={method} />
-          <Detail.Metadata.Label title="请求 URL" text={url} icon={Icon.Link} />
           <ShortcutsMetadata
             shortcuts={
               success
@@ -181,24 +171,6 @@ export function RequestResult(props: RequestResultProps) {
                   ]
             }
           />
-          {headers && Object.keys(headers).length > 0 && (
-            <>
-              <Detail.Metadata.Separator />
-              <Detail.Metadata.Label
-                title="响应头数量"
-                text={`${Object.keys(headers).length} 个`}
-              />
-            </>
-          )}
-          {data !== undefined && data !== null && (
-            <>
-              <Detail.Metadata.Separator />
-              <Detail.Metadata.Label
-                title="响应数据大小"
-                text={`${formatData(data).length} 字符`}
-              />
-            </>
-          )}
         </Detail.Metadata>
       }
     />

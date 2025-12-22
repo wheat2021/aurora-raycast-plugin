@@ -23,7 +23,7 @@ interface ShortcutsMetadataProps {
 /**
  * 统一的快捷键 Metadata 组件
  *
- * 以无序列表形式展示当前 UI 可用的快捷键，确保各个 UI 模块统一使用
+ * 展示当前 UI 可用的快捷键，确保各个 UI 模块统一使用
  *
  * @example
  * ```tsx
@@ -39,10 +39,17 @@ export function ShortcutsMetadata({
   shortcuts,
   title = "💡 快捷键",
 }: ShortcutsMetadataProps) {
-  // 将快捷键数组格式化为无序列表文本
-  const formattedText = shortcuts
-    .map((shortcut) => `• ${shortcut.key} ${shortcut.description}`)
-    .join("\n");
-
-  return <Detail.Metadata.Label title={title} text={formattedText} />;
+  return (
+    <>
+      <Detail.Metadata.Separator />
+      <Detail.Metadata.TagList title={title}>
+        {shortcuts.map((shortcut, index) => (
+          <Detail.Metadata.TagList.Item
+            key={index}
+            text={`${shortcut.key} ${shortcut.description}`}
+          />
+        ))}
+      </Detail.Metadata.TagList>
+    </>
+  );
 }

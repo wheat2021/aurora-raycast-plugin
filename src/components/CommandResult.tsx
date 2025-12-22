@@ -1,5 +1,6 @@
 import { Detail, ActionPanel, Action, Icon } from "@raycast/api";
 import { ShortcutsMetadata } from "./ShortcutsMetadata";
+import { MarkdownBuilder } from "../utils/markdownBuilder";
 
 interface CommandResultProps {
   success: boolean;
@@ -25,42 +26,67 @@ export function CommandResult({
     args && args.length > 0 ? `${commandLine} ${args.join(" ")}` : commandLine;
 
   // 构建 Markdown 内容
-  let markdown = `# ${success ? "✅ 命令执行成功" : "❌ 命令执行失败"}\n\n`;
+  const builder = new MarkdownBuilder();
+
+  // 标题
+  builder.title(success ? '命令执行成功' : '命令执行失败', 1, success ? '✅' : '❌');
 
   // 命令信息
-  markdown += `## 命令\n\n\`\`\`bash\n${fullCommand}\n\`\`\`\n\n`;
+  builder
+    .heading('命令')
+    .codeBlock(fullCommand, 'bash')
+    .separator();
 
   // 退出码
   if (exitCode !== undefined) {
-    markdown += `## 退出码\n\n${exitCode}\n\n`;
+    builder
+      .heading('退出码')
+      .text(String(exitCode))
+      .separator();
   }
 
   // 成功时显示输出
   if (success) {
+    builder.heading('标准输出 (stdout)');
+
     if (stdout && stdout.trim()) {
-      markdown += `## 标准输出 (stdout)\n\n\`\`\`\n${stdout.trim()}\n\`\`\`\n\n`;
+      builder.codeBlock(stdout.trim()).separator();
     } else {
-      markdown += `## 标准输出 (stdout)\n\n*无输出*\n\n`;
+      builder.text('*无输出*').separator();
     }
 
     if (stderr && stderr.trim()) {
-      markdown += `## 标准错误 (stderr)\n\n\`\`\`\n${stderr.trim()}\n\`\`\`\n\n`;
+      builder
+        .heading('标准错误 (stderr)')
+        .codeBlock(stderr.trim())
+        .separator();
     }
   }
   // 失败时显示错误信息
   else {
     if (error) {
-      markdown += `## 错误信息\n\n\`\`\`\n${error}\n\`\`\`\n\n`;
+      builder
+        .heading('错误信息')
+        .codeBlock(error)
+        .separator();
     }
 
     if (stderr && stderr.trim()) {
-      markdown += `## 标准错误 (stderr)\n\n\`\`\`\n${stderr.trim()}\n\`\`\`\n\n`;
+      builder
+        .heading('标准错误 (stderr)')
+        .codeBlock(stderr.trim())
+        .separator();
     }
 
     if (stdout && stdout.trim()) {
-      markdown += `## 标准输出 (stdout)\n\n\`\`\`\n${stdout.trim()}\n\`\`\`\n\n`;
+      builder
+        .heading('标准输出 (stdout)')
+        .codeBlock(stdout.trim())
+        .separator();
     }
   }
+
+  const markdown = builder.build();
 
   return (
     <Detail

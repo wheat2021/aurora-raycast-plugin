@@ -1,42 +1,6 @@
 import { RequestConfig, PromptValues, PromptInput } from "../types/prompt";
 import { valueToCommandString } from "./valueConverter";
-
-/**
- * 在字符串中替换变量 {{variable}}
- * @param template 模板字符串
- * @param values 用户输入的表单值
- * @param visibleInputIds 当前可见的字段 ID 集合
- * @param inputs 输入字段配置列表
- * @returns 替换后的字符串
- */
-function replaceVariables(
-  template: string,
-  values: PromptValues,
-  visibleInputIds: Set<string>,
-  inputs: PromptInput[],
-): string {
-  // 创建 input 配置的快速查找映射
-  const inputMap = new Map<string, PromptInput>();
-  inputs.forEach((input) => {
-    inputMap.set(input.id, input);
-  });
-
-  // 使用 [\w-]+ 支持包含连字符的变量名，如 model-htsc
-  return template.replace(/\{\{([\w-]+)\}\}/g, (match, varName) => {
-    // 只替换可见字段的值
-    if (!visibleInputIds.has(varName)) {
-      return "";
-    }
-
-    const value = values[varName];
-    if (value === undefined || value === null) {
-      return "";
-    }
-
-    const input = inputMap.get(varName);
-    return valueToCommandString(value, input);
-  });
-}
+import { replaceUserVariables } from "./variableReplacer";
 
 /**
  * 替换对象中的所有变量
@@ -56,7 +20,13 @@ function replaceObjectVariables(
 
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === "string") {
-      result[key] = replaceVariables(value, values, visibleInputIds, inputs);
+      result[key] = replaceUserVariables(
+        value,
+        values,
+        visibleInputIds,
+        inputs,
+        valueToCommandString,
+      );
     } else if (
       typeof value === "object" &&
       value !== null &&
@@ -108,7 +78,13 @@ export function generateCurlCommand(
   inputs: PromptInput[],
 ): string {
   // 替换 URL 中的变量
-  let url = replaceVariables(config.url, values, visibleInputIds, inputs);
+  let url = replaceUserVariables(
+    config.url,
+    values,
+    visibleInputIds,
+    inputs,
+    valueToCommandString,
+  );
 
   // 处理 query 参数
   if (config.query) {
@@ -116,7 +92,13 @@ export function generateCurlCommand(
 
     for (const [key, value] of Object.entries(config.query)) {
       if (typeof value === "string") {
-        query[key] = replaceVariables(value, values, visibleInputIds, inputs);
+        query[key] = replaceUserVariables(
+          value,
+          values,
+          visibleInputIds,
+          inputs,
+          valueToCommandString,
+        );
       } else {
         query[key] = value;
       }
@@ -139,11 +121,12 @@ export function generateCurlCommand(
   // 添加 headers
   if (config.headers) {
     for (const [key, value] of Object.entries(config.headers)) {
-      const replacedValue = replaceVariables(
+      const replacedValue = replaceUserVariables(
         value,
         values,
         visibleInputIds,
         inputs,
+        valueToCommandString,
       );
       // 使用单引号包裹，并转义其中的单引号
       const escapedValue = replacedValue.replace(/'/g, "'\\''");
@@ -157,11 +140,12 @@ export function generateCurlCommand(
 
     if (typeof config.body === "string") {
       // 如果 body 是字符串，直接替换变量
-      bodyString = replaceVariables(
+      bodyString = replaceUserVariables(
         config.body,
         values,
         visibleInputIds,
         inputs,
+        valueToCommandString,
       );
     } else {
       // 如果 body 是对象，递归替换变量后转为 JSON
@@ -212,7 +196,13 @@ export async function executeRequest(
   data: unknown;
 }> {
   // 替换 URL 中的变量
-  let url = replaceVariables(config.url, values, visibleInputIds, inputs);
+  let url = replaceUserVariables(
+    config.url,
+    values,
+    visibleInputIds,
+    inputs,
+    valueToCommandString,
+  );
 
   // 处理 query 参数
   if (config.query) {
@@ -220,7 +210,13 @@ export async function executeRequest(
 
     for (const [key, value] of Object.entries(config.query)) {
       if (typeof value === "string") {
-        query[key] = replaceVariables(value, values, visibleInputIds, inputs);
+        query[key] = replaceUserVariables(
+          value,
+          values,
+          visibleInputIds,
+          inputs,
+          valueToCommandString,
+        );
       } else {
         query[key] = value;
       }
@@ -237,7 +233,13 @@ export async function executeRequest(
 
   if (config.headers) {
     for (const [key, value] of Object.entries(config.headers)) {
-      headers[key] = replaceVariables(value, values, visibleInputIds, inputs);
+      headers[key] = replaceUserVariables(
+        value,
+        values,
+        visibleInputIds,
+        inputs,
+        valueToCommandString,
+      );
     }
   }
 
@@ -248,7 +250,13 @@ export async function executeRequest(
   if (config.body) {
     if (typeof config.body === "string") {
       // 如果 body 是字符串，直接替换变量
-      body = replaceVariables(config.body, values, visibleInputIds, inputs);
+      body = replaceUserVariables(
+        config.body,
+        values,
+        visibleInputIds,
+        inputs,
+        valueToCommandString,
+      );
       contentType = headers["Content-Type"] || "text/plain";
     } else {
       // 如果 body 是对象，递归替换变量后转为 JSON

@@ -3,45 +3,9 @@ import { promisify } from "util";
 import * as fs from "fs";
 import { CommandConfig, PromptValues, PromptInput } from "../types/prompt";
 import { valueToCommandString } from "./valueConverter";
+import { replaceUserVariables } from "./variableReplacer";
 
 const execFileAsync = promisify(execFile);
-
-/**
- * 在字符串中替换变量 {{variable}}
- * @param template 模板字符串
- * @param values 用户输入的表单值
- * @param visibleInputIds 当前可见的字段 ID 集合
- * @param inputs 输入字段配置列表
- * @returns 替换后的字符串
- */
-function replaceVariables(
-  template: string,
-  values: PromptValues,
-  visibleInputIds: Set<string>,
-  inputs: PromptInput[],
-): string {
-  // 创建 input 配置的快速查找映射
-  const inputMap = new Map<string, PromptInput>();
-  inputs.forEach((input) => {
-    inputMap.set(input.id, input);
-  });
-
-  // 使用 [\w-]+ 支持包含连字符的变量名，如 model-htsc
-  return template.replace(/\{\{([\w-]+)\}\}/g, (match, varName) => {
-    // 只替换可见字段的值
-    if (!visibleInputIds.has(varName)) {
-      return "";
-    }
-
-    const value = values[varName];
-    if (value === undefined || value === null) {
-      return "";
-    }
-
-    const input = inputMap.get(varName);
-    return valueToCommandString(value, input);
-  });
-}
 
 /**
  * 将字段 ID 转换为环境变量名称（用于向后兼容旧的 execScript）
@@ -118,11 +82,12 @@ export async function executeCommand(
       : commandOrPath;
 
   // 替换 commandLine 中的变量
-  const commandLine = replaceVariables(
+  const commandLine = replaceUserVariables(
     config.commandLine,
     values,
     visibleInputIds,
     inputs,
+    valueToCommandString,
   );
 
   // 验证命令文件存在
@@ -141,7 +106,15 @@ export async function executeCommand(
   const args: string[] = [];
   if (config.args) {
     for (const arg of config.args) {
-      args.push(replaceVariables(arg, values, visibleInputIds, inputs));
+      args.push(
+        replaceUserVariables(
+          arg,
+          values,
+          visibleInputIds,
+          inputs,
+          valueToCommandString,
+        ),
+      );
     }
   }
 
@@ -152,7 +125,13 @@ export async function executeCommand(
     // 使用配置中指定的 envs，并替换变量
     scriptEnv = {};
     for (const [key, value] of Object.entries(config.envs)) {
-      scriptEnv[key] = replaceVariables(value, values, visibleInputIds, inputs);
+      scriptEnv[key] = replaceUserVariables(
+        value,
+        values,
+        visibleInputIds,
+        inputs,
+        valueToCommandString,
+      );
     }
   } else {
     // 向后兼容：如果没有配置 envs，自动将所有可见字段转为环境变量（旧行为）
@@ -192,7 +171,13 @@ export async function executeCommand(
 
   // 替换 cwd 中的变量
   const cwd = config.cwd
-    ? replaceVariables(config.cwd, values, visibleInputIds, inputs)
+    ? replaceUserVariables(
+        config.cwd,
+        values,
+        visibleInputIds,
+        inputs,
+        valueToCommandString,
+      )
     : undefined;
 
   // 如果指定了 cwd，验证目录存在

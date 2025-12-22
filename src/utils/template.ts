@@ -1,5 +1,9 @@
 import { PromptValues, PromptInput } from "../types/prompt";
 import { valueToTemplateString } from "./valueConverter";
+import {
+  replaceUserVariables,
+  replaceRaycastVariables,
+} from "./variableReplacer";
 
 /**
  * 将表单值替换到模板内容中
@@ -19,39 +23,17 @@ export function replaceTemplate(
   selection?: string,
   clipboard?: string,
 ): string {
-  let result = content;
-
   // 1. 先替换 Raycast 内置变量 {selection} 和 {clipboard}
-  result = result.replace(/\{selection\}/g, selection || "");
-  result = result.replace(/\{clipboard\}/g, clipboard || "");
-
-  // 创建 input 配置的快速查找映射
-  const inputMap = new Map<string, PromptInput>();
-  inputs.forEach((input) => {
-    inputMap.set(input.id, input);
-  });
+  let result = replaceRaycastVariables(content, selection, clipboard);
 
   // 2. 替换用户自定义变量 {{variable}}
-  // 使用 [\w-]+ 支持包含连字符的变量名，如 model-htsc
-  result = result.replace(/\{\{([\w-]+)\}\}/g, (match, varName) => {
-    // 如果变量对应的字段不在可见字段列表中，返回空字符串
-    if (!visibleInputIds.has(varName)) {
-      return "";
-    }
-
-    const value = values[varName];
-
-    // 如果值未定义，返回空字符串
-    if (value === undefined || value === null) {
-      return "";
-    }
-
-    // 获取对应的 input 配置
-    const input = inputMap.get(varName);
-
-    // 使用 valueToTemplateString 进行转换
-    return valueToTemplateString(value, input);
-  });
+  result = replaceUserVariables(
+    result,
+    values,
+    visibleInputIds,
+    inputs,
+    valueToTemplateString,
+  );
 
   return result;
 }

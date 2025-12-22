@@ -1,4 +1,5 @@
 import { Detail, ActionPanel, Action, Icon } from "@raycast/api";
+import { ShortcutsMetadata } from "./ShortcutsMetadata";
 
 interface CommandResultProps {
   success: boolean;
@@ -133,12 +134,21 @@ export function CommandResult({
           {args && args.length > 0 && (
             <Detail.Metadata.Label title="参数" text={args.join(" ")} />
           )}
-          <Detail.Metadata.Label
-            title="💡 提示"
-            text={
+          <ShortcutsMetadata
+            shortcuts={
               success
-                ? "⌘C 复制输出 | ⌘L 复制命令"
-                : "⌘E 复制错误 | ⌘L 复制命令"
+                ? [
+                    { key: "⌘C", description: "复制输出" },
+                    { key: "⌘L", description: "复制完整命令" },
+                    { key: "⌘⇧L", description: "复制命令行路径" },
+                    { key: "⌘⇧E", description: "复制标准错误" },
+                  ]
+                : [
+                    { key: "⌘E", description: "复制错误" },
+                    { key: "⌘L", description: "复制完整命令" },
+                    { key: "⌘⇧L", description: "复制命令行路径" },
+                    { key: "⌘⇧E", description: "复制标准错误" },
+                  ]
             }
           />
         </Detail.Metadata>

@@ -1,4 +1,5 @@
 import { Detail, ActionPanel, Action, Icon } from "@raycast/api";
+import { ShortcutsMetadata } from "./ShortcutsMetadata";
 
 interface RequestResultProps {
   success: boolean;
@@ -164,10 +165,20 @@ export function RequestResult(props: RequestResultProps) {
           <Detail.Metadata.Separator />
           <Detail.Metadata.Label title="请求方法" text={method} />
           <Detail.Metadata.Label title="请求 URL" text={url} icon={Icon.Link} />
-          <Detail.Metadata.Label
-            title="💡 提示"
-            text={
-              success ? "⌘C 复制数据 | ⌘U 复制URL" : "⌘E 复制错误 | ⌘U 复制URL"
+          <ShortcutsMetadata
+            shortcuts={
+              success
+                ? [
+                    { key: "⌘C", description: "复制数据" },
+                    { key: "⌘V", description: "粘贴数据" },
+                    { key: "⌘U", description: "复制URL" },
+                    { key: "⌘⇧A", description: "复制完整结果" },
+                  ]
+                : [
+                    { key: "⌘E", description: "复制错误" },
+                    { key: "⌘U", description: "复制URL" },
+                    { key: "⌘⇧A", description: "复制完整结果" },
+                  ]
             }
           />
           {headers && Object.keys(headers).length > 0 && (

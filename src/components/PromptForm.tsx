@@ -200,11 +200,29 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
       });
 
       try {
+        // 读取当前选中的文本和剪贴板内容
+        let selection = "";
+        let clipboard = "";
+
+        try {
+          selection = await getSelectedText();
+        } catch {
+          selection = "";
+        }
+
+        try {
+          clipboard = (await Clipboard.readText()) || "";
+        } catch {
+          clipboard = "";
+        }
+
         const response = await executeRequest(
           config.request,
           values,
           visibleInputIds,
           config.inputs,
+          selection,
+          clipboard,
         );
 
         toast.style = Toast.Style.Success;
@@ -223,11 +241,29 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         toast.style = Toast.Style.Failure;
         toast.title = "请求失败";
 
+        // 读取当前选中的文本和剪贴板内容（用于错误时显示 URL）
+        let selection = "";
+        let clipboard = "";
+
+        try {
+          selection = await getSelectedText();
+        } catch {
+          selection = "";
+        }
+
+        try {
+          clipboard = (await Clipboard.readText()) || "";
+        } catch {
+          clipboard = "";
+        }
+
         const replacedUrl = replaceTemplate(
           config.request.url,
           values,
           visibleInputIds,
           config.inputs,
+          selection,
+          clipboard,
         );
 
         setRequestResult({
@@ -317,11 +353,29 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
 
     // Request 模式：复制 curl 命令
     if (config.request) {
+      // 读取当前选中的文本和剪贴板内容
+      let selection = "";
+      let clipboard = "";
+
+      try {
+        selection = await getSelectedText();
+      } catch {
+        selection = "";
+      }
+
+      try {
+        clipboard = (await Clipboard.readText()) || "";
+      } catch {
+        clipboard = "";
+      }
+
       const curlCommand = generateCurlCommand(
         config.request,
         values,
         visibleInputIds,
         config.inputs,
+        selection,
+        clipboard,
       );
 
       await Clipboard.copy(curlCommand);

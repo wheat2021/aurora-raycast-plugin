@@ -1,6 +1,9 @@
 import { RequestConfig, PromptValues, PromptInput } from "../types/prompt";
 import { valueToCommandString } from "./valueConverter";
-import { replaceUserVariables } from "./variableReplacer";
+import {
+  replaceUserVariables,
+  replaceRaycastVariables,
+} from "./variableReplacer";
 
 /**
  * 替换对象中的所有变量
@@ -8,6 +11,8 @@ import { replaceUserVariables } from "./variableReplacer";
  * @param values 用户输入的表单值
  * @param visibleInputIds 当前可见的字段 ID 集合
  * @param inputs 输入字段配置列表
+ * @param selection 当前选中的文本（可选）
+ * @param clipboard 剪贴板内容（可选）
  * @returns 替换后的对象
  */
 function replaceObjectVariables(
@@ -15,18 +20,23 @@ function replaceObjectVariables(
   values: PromptValues,
   visibleInputIds: Set<string>,
   inputs: PromptInput[],
+  selection?: string,
+  clipboard?: string,
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === "string") {
-      result[key] = replaceUserVariables(
-        value,
+      // 先替换 Raycast 内置变量，再替换用户变量
+      let replaced = replaceRaycastVariables(value, selection, clipboard);
+      replaced = replaceUserVariables(
+        replaced,
         values,
         visibleInputIds,
         inputs,
         valueToCommandString,
       );
+      result[key] = replaced;
     } else if (
       typeof value === "object" &&
       value !== null &&
@@ -37,6 +47,8 @@ function replaceObjectVariables(
         values,
         visibleInputIds,
         inputs,
+        selection,
+        clipboard,
       );
     } else {
       result[key] = value;
@@ -69,6 +81,8 @@ function buildQueryString(
  * @param values 用户输入的表单值
  * @param visibleInputIds 当前可见的字段 ID 集合
  * @param inputs 输入字段配置列表
+ * @param selection 当前选中的文本（可选）
+ * @param clipboard 剪贴板内容（可选）
  * @returns curl 命令字符串
  */
 export function generateCurlCommand(
@@ -76,10 +90,13 @@ export function generateCurlCommand(
   values: PromptValues,
   visibleInputIds: Set<string>,
   inputs: PromptInput[],
+  selection?: string,
+  clipboard?: string,
 ): string {
-  // 替换 URL 中的变量
-  let url = replaceUserVariables(
-    config.url,
+  // 替换 URL 中的变量（先替换 Raycast 内置变量，再替换用户变量）
+  let url = replaceRaycastVariables(config.url, selection, clipboard);
+  url = replaceUserVariables(
+    url,
     values,
     visibleInputIds,
     inputs,
@@ -92,13 +109,16 @@ export function generateCurlCommand(
 
     for (const [key, value] of Object.entries(config.query)) {
       if (typeof value === "string") {
-        query[key] = replaceUserVariables(
-          value,
+        // 先替换 Raycast 内置变量，再替换用户变量
+        let replaced = replaceRaycastVariables(value, selection, clipboard);
+        replaced = replaceUserVariables(
+          replaced,
           values,
           visibleInputIds,
           inputs,
           valueToCommandString,
         );
+        query[key] = replaced;
       } else {
         query[key] = value;
       }
@@ -121,8 +141,10 @@ export function generateCurlCommand(
   // 添加 headers
   if (config.headers) {
     for (const [key, value] of Object.entries(config.headers)) {
-      const replacedValue = replaceUserVariables(
-        value,
+      // 先替换 Raycast 内置变量，再替换用户变量
+      let replacedValue = replaceRaycastVariables(value, selection, clipboard);
+      replacedValue = replaceUserVariables(
+        replacedValue,
         values,
         visibleInputIds,
         inputs,
@@ -139,9 +161,10 @@ export function generateCurlCommand(
     let bodyString: string;
 
     if (typeof config.body === "string") {
-      // 如果 body 是字符串，直接替换变量
+      // 如果 body 是字符串，先替换 Raycast 内置变量，再替换用户变量
+      bodyString = replaceRaycastVariables(config.body, selection, clipboard);
       bodyString = replaceUserVariables(
-        config.body,
+        bodyString,
         values,
         visibleInputIds,
         inputs,
@@ -154,6 +177,8 @@ export function generateCurlCommand(
         values,
         visibleInputIds,
         inputs,
+        selection,
+        clipboard,
       );
       bodyString = JSON.stringify(replacedBody);
 
@@ -180,6 +205,8 @@ export function generateCurlCommand(
  * @param values 用户输入的表单值
  * @param visibleInputIds 当前可见的字段 ID 集合
  * @param inputs 输入字段配置列表
+ * @param selection 当前选中的文本（可选）
+ * @param clipboard 剪贴板内容（可选）
  * @returns Promise，包含响应数据
  * @throws 如果请求失败
  */
@@ -188,6 +215,8 @@ export async function executeRequest(
   values: PromptValues,
   visibleInputIds: Set<string>,
   inputs: PromptInput[],
+  selection?: string,
+  clipboard?: string,
 ): Promise<{
   url: string; // 替换后的完整 URL
   status: number;
@@ -195,9 +224,10 @@ export async function executeRequest(
   headers: Record<string, string>;
   data: unknown;
 }> {
-  // 替换 URL 中的变量
-  let url = replaceUserVariables(
-    config.url,
+  // 替换 URL 中的变量（先替换 Raycast 内置变量，再替换用户变量）
+  let url = replaceRaycastVariables(config.url, selection, clipboard);
+  url = replaceUserVariables(
+    url,
     values,
     visibleInputIds,
     inputs,
@@ -210,13 +240,16 @@ export async function executeRequest(
 
     for (const [key, value] of Object.entries(config.query)) {
       if (typeof value === "string") {
-        query[key] = replaceUserVariables(
-          value,
+        // 先替换 Raycast 内置变量，再替换用户变量
+        let replaced = replaceRaycastVariables(value, selection, clipboard);
+        replaced = replaceUserVariables(
+          replaced,
           values,
           visibleInputIds,
           inputs,
           valueToCommandString,
         );
+        query[key] = replaced;
       } else {
         query[key] = value;
       }
@@ -233,13 +266,16 @@ export async function executeRequest(
 
   if (config.headers) {
     for (const [key, value] of Object.entries(config.headers)) {
-      headers[key] = replaceUserVariables(
-        value,
+      // 先替换 Raycast 内置变量，再替换用户变量
+      let replaced = replaceRaycastVariables(value, selection, clipboard);
+      replaced = replaceUserVariables(
+        replaced,
         values,
         visibleInputIds,
         inputs,
         valueToCommandString,
       );
+      headers[key] = replaced;
     }
   }
 
@@ -249,9 +285,10 @@ export async function executeRequest(
 
   if (config.body) {
     if (typeof config.body === "string") {
-      // 如果 body 是字符串，直接替换变量
+      // 如果 body 是字符串，先替换 Raycast 内置变量，再替换用户变量
+      body = replaceRaycastVariables(config.body, selection, clipboard);
       body = replaceUserVariables(
-        config.body,
+        body,
         values,
         visibleInputIds,
         inputs,
@@ -265,6 +302,8 @@ export async function executeRequest(
         values,
         visibleInputIds,
         inputs,
+        selection,
+        clipboard,
       );
       body = JSON.stringify(replacedBody);
       contentType = headers["Content-Type"] || "application/json";

@@ -55,6 +55,7 @@ export interface RequestConfig {
   headers?: Record<string, string>; // 请求头，支持变量替换
   body?: string | Record<string, unknown>; // 请求体，支持变量替换
   timeout?: number; // 超时时间（毫秒），默认 30000
+  async?: boolean; // 是否异步执行（默认 false）：true=后台执行+Toast通知；false=同步执行+显示结果页面
 }
 
 /**

@@ -1,7 +1,6 @@
-import { Detail, ActionPanel, Action, Icon, showToast, Toast, popToRoot } from "@raycast/api";
+import { Detail, ActionPanel, Action, Icon } from "@raycast/api";
 import { ShortcutsMetadata } from "./ShortcutsMetadata";
 import { MarkdownBuilder } from "../utils/markdownBuilder";
-import { clearRequestResult } from "../utils/requestCache";
 
 interface RequestResultProps {
   success: boolean;
@@ -12,7 +11,6 @@ interface RequestResultProps {
   headers?: Record<string, string>;
   data?: unknown;
   error?: string;
-  promptId?: string; // 用于清除缓存
   onBack?: () => void; // 回调函数，用于返回表单
 }
 
@@ -151,28 +149,6 @@ export function RequestResult(props: RequestResultProps) {
                 icon={Icon.ArrowLeft}
                 shortcut={{ modifiers: ["cmd"], key: "backspace" }}
                 onAction={props.onBack}
-              />
-            </ActionPanel.Section>
-          )}
-          {/* 缓存管理 */}
-          {props.promptId && (
-            <ActionPanel.Section title="缓存管理">
-              <Action
-                title="清除缓存并返回"
-                icon={Icon.Trash}
-                shortcut={{ modifiers: ["cmd", "shift"], key: "backspace" }}
-                onAction={async () => {
-                  await clearRequestResult(props.promptId!);
-                  await showToast({
-                    style: Toast.Style.Success,
-                    title: "缓存已清除",
-                  });
-                  if (props.onBack) {
-                    props.onBack();
-                  } else {
-                    await popToRoot();
-                  }
-                }}
               />
             </ActionPanel.Section>
           )}

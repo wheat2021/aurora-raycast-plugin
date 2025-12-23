@@ -1,4 +1,11 @@
-import { List, getPreferenceValues, Icon, LaunchProps, showToast, Toast } from "@raycast/api";
+import {
+  List,
+  getPreferenceValues,
+  Icon,
+  LaunchProps,
+  showToast,
+  Toast,
+} from "@raycast/api";
 import { useState, useEffect } from "react";
 import { ProcessorConfig } from "./types/processor";
 import { PromptList } from "./components/PromptList";
@@ -30,7 +37,9 @@ export default function Command(props: LaunchProps<{ arguments: Arguments }>) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deeplinkMode, setDeeplinkMode] = useState(false);
-  const [deeplinkConfig, setDeeplinkConfig] = useState<DeeplinkConfig | null>(null);
+  const [deeplinkConfig, setDeeplinkConfig] = useState<DeeplinkConfig | null>(
+    null,
+  );
 
   useEffect(() => {
     handleLaunch();
@@ -72,7 +81,10 @@ export default function Command(props: LaunchProps<{ arguments: Arguments }>) {
           await showToast({
             style: Toast.Style.Failure,
             title: "Deeplink 参数解析失败",
-            message: parseError instanceof Error ? parseError.message : "JSON 格式错误",
+            message:
+              parseError instanceof Error
+                ? parseError.message
+                : "JSON 格式错误",
           });
           setError("Deeplink 参数解析失败");
           setIsLoading(false);
@@ -83,7 +95,7 @@ export default function Command(props: LaunchProps<{ arguments: Arguments }>) {
       // 3. 验证并合并参数
       const { values, warnings, isComplete } = validateAndMergeInputs(
         config,
-        deeplinkInputs
+        deeplinkInputs,
       );
 
       // 4. 根据完整性决定执行方式

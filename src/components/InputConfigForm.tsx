@@ -33,6 +33,9 @@ export function InputConfigForm({ input, onSave }: InputConfigFormProps) {
   );
   const [description, setDescription] = useState(input.description || "");
   const [isExtraInput, setIsExtraInput] = useState(input.isExtraInput || false);
+  const [preserveDefault, setPreserveDefault] = useState(
+    input.preserveDefault || false,
+  );
 
   // 保存字段配置
   const handleSave = async () => {
@@ -55,6 +58,7 @@ export function InputConfigForm({ input, onSave }: InputConfigFormProps) {
       required,
       description: description.trim() || undefined,
       isExtraInput,
+      preserveDefault: preserveDefault || undefined,
     };
 
     // 根据类型设置默认值
@@ -132,6 +136,14 @@ export function InputConfigForm({ input, onSave }: InputConfigFormProps) {
         value={isExtraInput}
         onChange={setIsExtraInput}
         info="标记为 extraInput，仅在其他字段触发时显示"
+      />
+
+      <Form.Checkbox
+        id="preserveDefault"
+        label="保留默认值"
+        value={preserveDefault}
+        onChange={setPreserveDefault}
+        info="提交表单时不更新此字段的 default 值（适用于不允许重复的输入等场景）"
       />
 
       <Form.Separator />

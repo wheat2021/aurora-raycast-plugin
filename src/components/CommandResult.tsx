@@ -29,52 +29,41 @@ export function CommandResult({
   const builder = new MarkdownBuilder();
 
   // 标题
-  builder.title(success ? '命令执行成功' : '命令执行失败', 1, success ? '✅' : '❌');
+  builder.title(
+    success ? "命令执行成功" : "命令执行失败",
+    1,
+    success ? "✅" : "❌",
+  );
 
   // 命令信息
-  builder
-    .heading('命令')
-    .codeBlock(fullCommand, 'bash')
-    .separator();
+  builder.heading("命令").codeBlock(fullCommand, "bash").separator();
 
   // 成功时显示输出
   if (success) {
-    builder.heading('标准输出 (stdout)');
+    builder.heading("标准输出 (stdout)");
 
     if (stdout && stdout.trim()) {
       builder.codeBlock(stdout.trim()).separator();
     } else {
-      builder.text('*无输出*').separator();
+      builder.text("*无输出*").separator();
     }
 
     if (stderr && stderr.trim()) {
-      builder
-        .heading('标准错误 (stderr)')
-        .codeBlock(stderr.trim())
-        .separator();
+      builder.heading("标准错误 (stderr)").codeBlock(stderr.trim()).separator();
     }
   }
   // 失败时显示错误信息
   else {
     if (error) {
-      builder
-        .heading('错误信息')
-        .codeBlock(error)
-        .separator();
+      builder.heading("错误信息").codeBlock(error).separator();
     }
 
     if (stderr && stderr.trim()) {
-      builder
-        .heading('标准错误 (stderr)')
-        .codeBlock(stderr.trim())
-        .separator();
+      builder.heading("标准错误 (stderr)").codeBlock(stderr.trim()).separator();
     }
 
     if (stdout && stdout.trim()) {
-      builder
-        .heading('标准输出 (stdout)')
-        .codeBlock(stdout.trim())
-        .separator();
+      builder.heading("标准输出 (stdout)").codeBlock(stdout.trim()).separator();
     }
   }
 

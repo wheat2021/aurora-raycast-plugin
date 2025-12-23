@@ -72,7 +72,9 @@ export function validateAndMergeInputs(
 /**
  * 获取字段的默认值
  */
-function getDefaultValue(input: PromptInput): string | string[] | boolean | undefined {
+function getDefaultValue(
+  input: PromptInput,
+): string | string[] | boolean | undefined {
   if (input.default !== undefined) {
     return input.default;
   }

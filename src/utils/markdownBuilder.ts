@@ -24,8 +24,8 @@ export class MarkdownBuilder {
    * @returns this - 支持链式调用
    */
   title(text: string, level: number = 1, emoji?: string): this {
-    const prefix = '#'.repeat(Math.max(1, Math.min(6, level)));
-    this.sections.push(`${prefix} ${emoji ? emoji + ' ' : ''}${text}\n`);
+    const prefix = "#".repeat(Math.max(1, Math.min(6, level)));
+    this.sections.push(`${prefix} ${emoji ? emoji + " " : ""}${text}\n`);
     return this;
   }
 
@@ -36,7 +36,7 @@ export class MarkdownBuilder {
    * @returns this - 支持链式调用
    */
   heading(text: string, emoji?: string): this {
-    this.sections.push(`## ${emoji ? emoji + ' ' : ''}${text}\n`);
+    this.sections.push(`## ${emoji ? emoji + " " : ""}${text}\n`);
     return this;
   }
 
@@ -47,10 +47,10 @@ export class MarkdownBuilder {
    * @returns this - 支持链式调用
    */
   codeBlock(content: string, language?: string): this {
-    const lang = language || '';
+    const lang = language || "";
     this.sections.push(`\`\`\`${lang}`);
     this.sections.push(content);
-    this.sections.push('```');
+    this.sections.push("```");
     return this;
   }
 
@@ -70,7 +70,7 @@ export class MarkdownBuilder {
    * @returns this - 支持链式调用
    */
   list(items: string[]): this {
-    items.forEach(item => this.sections.push(`- ${item}`));
+    items.forEach((item) => this.sections.push(`- ${item}`));
     return this;
   }
 
@@ -89,7 +89,7 @@ export class MarkdownBuilder {
    * @returns this - 支持链式调用
    */
   separator(): this {
-    this.sections.push('');
+    this.sections.push("");
     return this;
   }
 
@@ -138,6 +138,6 @@ export class MarkdownBuilder {
    * @returns 完整的 Markdown 内容
    */
   build(): string {
-    return this.sections.join('\n');
+    return this.sections.join("\n");
   }
 }

@@ -40,48 +40,40 @@ export function RequestResult(props: RequestResultProps) {
     const builder = new MarkdownBuilder();
 
     // 标题
-    builder.title(success ? '请求成功' : '请求失败', 1, success ? '✅' : '❌');
+    builder.title(success ? "请求成功" : "请求失败", 1, success ? "✅" : "❌");
 
     // 响应数据
     if (data !== undefined && data !== null) {
       const formattedData = formatData(data);
       const language = typeof data === "object" ? "json" : undefined;
 
-      builder
-        .heading('响应数据', '📦')
-        .codeBlock(formattedData, language);
+      builder.heading("响应数据", "📦").codeBlock(formattedData, language);
     }
 
     // 错误信息（如果失败）
     if (!success && error) {
-      builder
-        .heading('错误信息', '⚠️')
-        .codeBlock(error)
-        .separator();
+      builder.heading("错误信息", "⚠️").codeBlock(error).separator();
     }
 
     // 请求信息
     const requestInfoItems = [
-      `${MarkdownBuilder.bold('方法')}: ${MarkdownBuilder.inlineCode(method)}`,
-      `${MarkdownBuilder.bold('URL')}: ${MarkdownBuilder.inlineCode(url)}`,
+      `${MarkdownBuilder.bold("方法")}: ${MarkdownBuilder.inlineCode(method)}`,
+      `${MarkdownBuilder.bold("URL")}: ${MarkdownBuilder.inlineCode(url)}`,
     ];
 
     if (status !== undefined) {
       requestInfoItems.push(
-        `${MarkdownBuilder.bold('状态码')}: ${MarkdownBuilder.inlineCode(`${status} ${statusText || ""}`)}`
+        `${MarkdownBuilder.bold("状态码")}: ${MarkdownBuilder.inlineCode(`${status} ${statusText || ""}`)}`,
       );
     }
 
-    builder
-      .heading('请求信息', '📤')
-      .list(requestInfoItems)
-      .separator();
+    builder.heading("请求信息", "📤").list(requestInfoItems).separator();
 
     // 响应头
     if (headers && Object.keys(headers).length > 0) {
       builder
-        .heading('响应头', '📋')
-        .codeBlock(JSON.stringify(headers, null, 2), 'json')
+        .heading("响应头", "📋")
+        .codeBlock(JSON.stringify(headers, null, 2), "json")
         .separator();
     }
 

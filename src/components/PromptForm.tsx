@@ -61,8 +61,9 @@ export function PromptForm({
   const [config, setConfig] = useState<PromptConfig>(initialConfig);
   const [formValues, setFormValues] = useState<PromptValues>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [fieldWarnings, setFieldWarnings] = useState<Record<string, string>>(
-    warnings || {}
+    warnings || {},
   );
   const [requestResult, setRequestResult] = useState<RequestResultState | null>(
     null,
@@ -113,11 +114,18 @@ export function PromptForm({
 
   // 保存表单值到配置文件的 default 属性，以及 lastUseTime，以便下次使用
   const saveFormValues = async (values: PromptValues) => {
-    // 更新所有字段的 default 值
-    const newInputs = config.inputs.map((input) => ({
-      ...input,
-      default: values[input.id],
-    }));
+    // 更新所有字段的 default 值（除非 preserveDefault 为 true）
+    const newInputs = config.inputs.map((input) => {
+      // 如果 preserveDefault 为 true，保留原有 default 值
+      if (input.preserveDefault) {
+        return input;
+      }
+      // 否则更新 default 值
+      return {
+        ...input,
+        default: values[input.id],
+      };
+    });
 
     const newConfig = {
       ...config,
@@ -276,10 +284,12 @@ export function PromptForm({
           loadingToast.hide();
 
           // 显示失败 Toast，包含错误信息摘要
-          const errorMessage = error instanceof Error ? error.message : "未知错误";
-          const errorSummary = errorMessage.length > 100
-            ? errorMessage.substring(0, 100) + "..."
-            : errorMessage;
+          const errorMessage =
+            error instanceof Error ? error.message : "未知错误";
+          const errorSummary =
+            errorMessage.length > 100
+              ? errorMessage.substring(0, 100) + "..."
+              : errorMessage;
 
           await showToast({
             style: Toast.Style.Failure,
@@ -501,10 +511,7 @@ export function PromptForm({
   // 如果有请求结果，显示结果页面
   if (requestResult) {
     return (
-      <RequestResult
-        {...requestResult}
-        onBack={() => setRequestResult(null)}
-      />
+      <RequestResult {...requestResult} onBack={() => setRequestResult(null)} />
     );
   }
 

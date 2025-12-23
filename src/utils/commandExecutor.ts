@@ -57,12 +57,38 @@ function valuesToEnv(
 }
 
 /**
+ * 判断字符串是否为 shell 命令（而非脚本路径）
+ * 通过检查是否包含 shell 特殊字符来判断
+ * @param command 命令字符串
+ * @returns 是否为 shell 命令
+ */
+function isShellCommand(command: string): boolean {
+  // 包含 shell 操作符或通配符的认为是 shell 命令
+  const shellPatterns = [
+    /&&/, // 逻辑与
+    /\|\|/, // 逻辑或
+    /\|(?!\|)/, // 管道（排除 ||）
+    /;/, // 命令分隔符
+    /`/, // 命令替换
+    /\$\(/, // 命令替换
+    />/, // 重定向
+    /</, // 重定向
+    /\*/, // 通配符
+    /\?/, // 通配符
+    /\[.*\]/, // 通配符或测试
+  ];
+
+  return shellPatterns.some((pattern) => pattern.test(command));
+}
+
+/**
  * 执行命令或脚本
- * 支持两种调用方式：
+ * 支持三种调用方式：
  * 1. 传入 CommandConfig 对象（推荐）
  * 2. 传入字符串路径（向后兼容旧的 execScript）
+ * 3. 传入 shell 命令字符串（包含管道、重定向等）
  *
- * @param commandOrPath CommandConfig 对象或脚本路径字符串
+ * @param commandOrPath CommandConfig 对象、脚本路径字符串或 shell 命令字符串
  * @param values 用户输入的表单值
  * @param visibleInputIds 当前可见的字段 ID 集合
  * @param inputs 输入字段配置列表
@@ -90,16 +116,22 @@ export async function executeCommand(
     valueToCommandString,
   );
 
-  // 验证命令文件存在
-  if (!fs.existsSync(commandLine)) {
-    throw new Error(`命令或脚本文件不存在: ${commandLine}`);
-  }
+  // 判断是否为 shell 命令
+  const isShell = isShellCommand(commandLine);
 
-  // 检查是否可执行（Unix-like 系统）
-  try {
-    fs.accessSync(commandLine, fs.constants.X_OK);
-  } catch {
-    throw new Error(`文件不可执行: ${commandLine}`);
+  // 如果不是 shell 命令，进行文件验证
+  if (!isShell) {
+    // 验证命令文件存在
+    if (!fs.existsSync(commandLine)) {
+      throw new Error(`命令或脚本文件不存在: ${commandLine}`);
+    }
+
+    // 检查是否可执行（Unix-like 系统）
+    try {
+      fs.accessSync(commandLine, fs.constants.X_OK);
+    } catch {
+      throw new Error(`文件不可执行: ${commandLine}`);
+    }
   }
 
   // 替换 args 中的变量
@@ -188,12 +220,30 @@ export async function executeCommand(
   try {
     // 执行命令，设置超时
     const timeout = config.timeout || 30000;
-    const { stdout, stderr } = await execFileAsync(commandLine, args, {
-      env,
-      cwd,
-      timeout,
-      maxBuffer: 1024 * 1024, // 1MB
-    });
+    let stdout: string;
+    let stderr: string;
+
+    if (isShell) {
+      // 对于 shell 命令，使用 sh -c 执行
+      const result = await execFileAsync("/bin/sh", ["-c", commandLine], {
+        env,
+        cwd,
+        timeout,
+        maxBuffer: 1024 * 1024, // 1MB
+      });
+      stdout = result.stdout;
+      stderr = result.stderr;
+    } else {
+      // 对于脚本文件，直接执行
+      const result = await execFileAsync(commandLine, args, {
+        env,
+        cwd,
+        timeout,
+        maxBuffer: 1024 * 1024, // 1MB
+      });
+      stdout = result.stdout;
+      stderr = result.stderr;
+    }
 
     return { stdout, stderr };
   } catch (error) {

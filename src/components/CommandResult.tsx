@@ -37,14 +37,6 @@ export function CommandResult({
     .codeBlock(fullCommand, 'bash')
     .separator();
 
-  // 退出码
-  if (exitCode !== undefined) {
-    builder
-      .heading('退出码')
-      .text(String(exitCode))
-      .separator();
-  }
-
   // 成功时显示输出
   if (success) {
     builder.heading('标准输出 (stdout)');
@@ -117,12 +109,6 @@ export function CommandResult({
             icon={Icon.Terminal}
             shortcut={{ modifiers: ["cmd"], key: "l" }}
           />
-          <Action.CopyToClipboard
-            title="复制命令行路径"
-            content={commandLine}
-            icon={Icon.Snippets}
-            shortcut={{ modifiers: ["cmd", "shift"], key: "l" }}
-          />
           {/* 其他输出复制选项 */}
           {!success && stdout && stdout.trim() && (
             <Action.CopyToClipboard
@@ -152,27 +138,17 @@ export function CommandResult({
             <Detail.Metadata.Label title="退出码" text={String(exitCode)} />
           )}
           <Detail.Metadata.Separator />
-          <Detail.Metadata.Label
-            title="命令行路径"
-            text={commandLine}
-            icon={Icon.Terminal}
-          />
-          {args && args.length > 0 && (
-            <Detail.Metadata.Label title="参数" text={args.join(" ")} />
-          )}
           <ShortcutsMetadata
             shortcuts={
               success
                 ? [
                     { key: "⌘C", description: "复制输出" },
                     { key: "⌘L", description: "复制完整命令" },
-                    { key: "⌘⇧L", description: "复制命令行路径" },
                     { key: "⌘⇧E", description: "复制标准错误" },
                   ]
                 : [
                     { key: "⌘E", description: "复制错误" },
                     { key: "⌘L", description: "复制完整命令" },
-                    { key: "⌘⇧L", description: "复制命令行路径" },
                     { key: "⌘⇧E", description: "复制标准错误" },
                   ]
             }

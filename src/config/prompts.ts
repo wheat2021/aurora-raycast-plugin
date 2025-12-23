@@ -109,12 +109,20 @@ export async function loadPromptsFromDirectory(
       // 验证并处理 inputs（现在是异步的）
       const validatedInputs = await validateInputs(parsed.data.inputs);
 
+      // 规范化 command 配置：如果是字符串，转换为 CommandConfig 对象
+      let normalizedCommand = parsed.data.command;
+      if (typeof parsed.data.command === "string") {
+        normalizedCommand = {
+          commandLine: parsed.data.command,
+        };
+      }
+
       const promptConfig: PromptConfig = {
         id: filePath, // 使用文件路径作为唯一标识符
         title: parsed.data.title,
         formDescription: parsed.data.formDescription,
         execScript: parsed.data.execScript,
-        command: parsed.data.command,
+        command: normalizedCommand,
         request: parsed.data.request,
         inputs: validatedInputs,
         content: resolvedContent,

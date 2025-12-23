@@ -326,6 +326,18 @@ export function PromptForm({ config: initialConfig, launchContext }: PromptFormP
         title: "正在执行命令...",
       });
 
+      // 替换命令中的变量，得到实际执行的命令
+      const replacedCommandLine = replaceTemplate(
+        config.command.commandLine,
+        values,
+        visibleInputIds,
+        config.inputs,
+      );
+
+      const replacedArgs = config.command.args?.map((arg) =>
+        replaceTemplate(arg, values, visibleInputIds, config.inputs),
+      );
+
       try {
         const { stdout, stderr } = await executeCommand(
           config.command,
@@ -339,8 +351,8 @@ export function PromptForm({ config: initialConfig, launchContext }: PromptFormP
 
         setCommandResult({
           success: true,
-          commandLine: config.command.commandLine,
-          args: config.command.args,
+          commandLine: replacedCommandLine,
+          args: replacedArgs,
           exitCode: 0,
           stdout,
           stderr,
@@ -359,8 +371,8 @@ export function PromptForm({ config: initialConfig, launchContext }: PromptFormP
 
         setCommandResult({
           success: false,
-          commandLine: config.command.commandLine,
-          args: config.command.args,
+          commandLine: replacedCommandLine,
+          args: replacedArgs,
           exitCode: execError.code,
           stdout: execError.stdout,
           stderr: execError.stderr,

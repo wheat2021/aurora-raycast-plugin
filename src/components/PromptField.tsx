@@ -4,34 +4,26 @@ import { readFolderValues } from "../utils/folderReader";
 
 interface PromptFieldProps {
   config: PromptInput;
+  value?: string | string[] | boolean;
   onChange: (id: string, value: string | string[] | boolean) => void;
   error?: string;
+  warning?: string;
 }
 
-export function PromptField({ config, onChange, error }: PromptFieldProps) {
+export function PromptField({
+  config,
+  value,
+  onChange,
+  error,
+  warning,
+}: PromptFieldProps) {
   const requiredLabel = config.required ? `${config.label} *` : config.label;
   const description = config.description || "";
 
-  // 获取默认值
-  const getDefaultValue = () => {
-    if (config.default !== undefined) {
-      return config.default;
-    }
-
-    // 对于选择类型，查找默认选中项
-    if (config.options) {
-      const defaultOptions = config.options.filter((opt) => opt.isDefault);
-      if (config.type === "multiselect") {
-        return defaultOptions.map((opt) => opt.value);
-      } else if (config.type === "select" && defaultOptions.length > 0) {
-        return defaultOptions[0].value;
-      }
-    }
-
-    return undefined;
-  };
-
-  const defaultValue = getDefaultValue();
+  // 如果有警告，显示在 placeholder 中；否则显示 description
+  const placeholder = warning
+    ? `⚠️ Deeplink 参数无效：${warning}`
+    : description;
 
   switch (config.type) {
     case "text":
@@ -39,9 +31,9 @@ export function PromptField({ config, onChange, error }: PromptFieldProps) {
         <Form.TextField
           id={config.id}
           title={requiredLabel}
-          placeholder={description}
+          placeholder={placeholder}
           info={description}
-          defaultValue={defaultValue as string}
+          value={value as string | undefined}
           error={error}
           onChange={(value) => onChange(config.id, value)}
         />
@@ -52,9 +44,9 @@ export function PromptField({ config, onChange, error }: PromptFieldProps) {
         <Form.TextArea
           id={config.id}
           title={requiredLabel}
-          placeholder={description}
+          placeholder={placeholder}
           info={description}
-          defaultValue={defaultValue as string}
+          value={value as string | undefined}
           error={error}
           onChange={(value) => onChange(config.id, value)}
         />
@@ -66,7 +58,7 @@ export function PromptField({ config, onChange, error }: PromptFieldProps) {
           id={config.id}
           title={requiredLabel}
           info={description}
-          defaultValue={defaultValue as string}
+          value={value as string | undefined}
           error={error}
           onChange={(value) => onChange(config.id, value)}
         >
@@ -94,7 +86,7 @@ export function PromptField({ config, onChange, error }: PromptFieldProps) {
           id={config.id}
           title={requiredLabel}
           info={description}
-          defaultValue={defaultValue as string}
+          value={value as string | undefined}
           error={error}
           onChange={(value) => onChange(config.id, value)}
         >
@@ -115,7 +107,7 @@ export function PromptField({ config, onChange, error }: PromptFieldProps) {
           id={config.id}
           title={requiredLabel}
           info={description}
-          defaultValue={defaultValue as string[]}
+          value={value as string[] | undefined}
           error={error}
           onChange={(value) => onChange(config.id, value)}
         >
@@ -135,7 +127,7 @@ export function PromptField({ config, onChange, error }: PromptFieldProps) {
           id={config.id}
           label={requiredLabel}
           info={description}
-          defaultValue={defaultValue as boolean}
+          value={value as boolean | undefined}
           error={error}
           onChange={(value) => onChange(config.id, value)}
         />

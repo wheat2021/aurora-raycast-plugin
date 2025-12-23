@@ -93,23 +93,68 @@ declare namespace Arguments {
   /** Arguments passed to the `manage-input-templates` command */
   export type ManageInputTemplates = {}
   /** Arguments passed to the `processor-1` command */
-  export type Processor1 = {}
+  export type Processor1 = {
+  /** Absolute path to prompt file */
+  "promptPath": string,
+  /** Input values (JSON string) */
+  "inputs": string
+}
   /** Arguments passed to the `processor-2` command */
-  export type Processor2 = {}
+  export type Processor2 = {
+  /** Absolute path to prompt file */
+  "promptPath": string,
+  /** Input values (JSON string) */
+  "inputs": string
+}
   /** Arguments passed to the `processor-3` command */
-  export type Processor3 = {}
+  export type Processor3 = {
+  /** Absolute path to prompt file */
+  "promptPath": string,
+  /** Input values (JSON string) */
+  "inputs": string
+}
   /** Arguments passed to the `processor-4` command */
-  export type Processor4 = {}
+  export type Processor4 = {
+  /** Absolute path to prompt file */
+  "promptPath": string,
+  /** Input values (JSON string) */
+  "inputs": string
+}
   /** Arguments passed to the `processor-5` command */
-  export type Processor5 = {}
+  export type Processor5 = {
+  /** Absolute path to prompt file */
+  "promptPath": string,
+  /** Input values (JSON string) */
+  "inputs": string
+}
   /** Arguments passed to the `processor-6` command */
-  export type Processor6 = {}
+  export type Processor6 = {
+  /** Absolute path to prompt file */
+  "promptPath": string,
+  /** Input values (JSON string) */
+  "inputs": string
+}
   /** Arguments passed to the `processor-7` command */
-  export type Processor7 = {}
+  export type Processor7 = {
+  /** Absolute path to prompt file */
+  "promptPath": string,
+  /** Input values (JSON string) */
+  "inputs": string
+}
   /** Arguments passed to the `processor-8` command */
-  export type Processor8 = {}
+  export type Processor8 = {
+  /** Absolute path to prompt file */
+  "promptPath": string,
+  /** Input values (JSON string) */
+  "inputs": string
+}
   /** Arguments passed to the `processor-9` command */
-  export type Processor9 = {}
+  export type Processor9 = {
+  /** Absolute path to prompt file */
+  "promptPath": string,
+  /** Input values (JSON string) */
+  "inputs": string
+}
   /** Arguments passed to the `ask-ai` command */
   export type AskAi = {
   /** Ask anything... */

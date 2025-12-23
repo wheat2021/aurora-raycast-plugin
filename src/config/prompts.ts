@@ -148,6 +148,71 @@ export async function loadPromptsFromDirectory(
 }
 
 /**
+ * 从指定路径加载单个提示词配置文件
+ * 用于 deeplink 直接访问某个提示词配置
+ * @param filePath 提示词文件的绝对路径
+ * @returns 提示词配置，如果文件不存在或解析失败则返回 null
+ */
+export async function loadPromptConfig(
+  filePath: string,
+): Promise<PromptConfig | null> {
+  // 检查文件是否存在
+  if (!fs.existsSync(filePath)) {
+    console.error(`Prompt file does not exist: ${filePath}`);
+    return null;
+  }
+
+  try {
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+    const parsed = matter(fileContent);
+
+    // 验证 frontmatter 是否包含必要字段
+    if (!parsed.data.title || !parsed.data.inputs) {
+      console.warn(`Invalid prompt file: ${filePath}`);
+      return null;
+    }
+
+    // 解析 Obsidian 引用
+    // 假设 rules 目录在提示词文件的父目录的父目录下
+    const promptsDir = path.dirname(filePath);
+    const rulesDir = path.join(path.dirname(promptsDir), "rules");
+    const resolvedContent = resolveObsidianReferences(
+      parsed.content.trim(),
+      rulesDir,
+    );
+
+    // 验证并处理 inputs
+    const validatedInputs = await validateInputs(parsed.data.inputs);
+
+    // 规范化 command 配置：如果是字符串，转换为 CommandConfig 对象
+    let normalizedCommand = parsed.data.command;
+    if (typeof parsed.data.command === "string") {
+      normalizedCommand = {
+        commandLine: parsed.data.command,
+      };
+    }
+
+    const promptConfig: PromptConfig = {
+      id: filePath, // 使用文件路径作为唯一标识符
+      title: parsed.data.title,
+      formDescription: parsed.data.formDescription,
+      execScript: parsed.data.execScript,
+      command: normalizedCommand,
+      request: parsed.data.request,
+      inputs: validatedInputs,
+      content: resolvedContent,
+      filePath,
+      lastUseTime: parsed.data.lastUseTime,
+    };
+
+    return promptConfig;
+  } catch (error) {
+    console.error(`Error loading prompt file ${filePath}:`, error);
+    return null;
+  }
+}
+
+/**
  * 验证并规范化输入字段配置
  * 支持通过 copy 属性从模板复制配置
  */

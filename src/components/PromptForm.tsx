@@ -25,6 +25,9 @@ import { CommandResult } from "./CommandResult";
 
 interface PromptFormProps {
   config: PromptConfig;
+  initialValues?: PromptValues; // Deeplink 提供的初始值
+  warnings?: Record<string, string>; // 验证警告
+  autoExecute?: boolean; // 是否自动执行
 }
 
 interface RequestResultState {
@@ -48,11 +51,19 @@ interface CommandResultState {
   error?: string;
 }
 
-export function PromptForm({ config: initialConfig }: PromptFormProps) {
+export function PromptForm({
+  config: initialConfig,
+  initialValues,
+  warnings,
+  autoExecute,
+}: PromptFormProps) {
   // 使用状态管理配置，以便保存后能刷新
   const [config, setConfig] = useState<PromptConfig>(initialConfig);
   const [formValues, setFormValues] = useState<PromptValues>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [fieldWarnings, setFieldWarnings] = useState<Record<string, string>>(
+    warnings || {}
+  );
   const [requestResult, setRequestResult] = useState<RequestResultState | null>(
     null,
   );
@@ -60,27 +71,45 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
     null,
   );
 
-  // 组件挂载时初始化表单值，按以下优先级：1. 字段配置的 default 属性；2. 选项中 isDefault=true 的项（multiselect 收集所有默认项，其他类型取第一个）
+  // 组件挂载时初始化表单值
+  // 优先级：1. Deeplink 提供的 initialValues；2. 字段配置的 default 属性；3. 选项中 isDefault=true 的项
   useEffect(() => {
-    const initialValues: PromptValues = {};
-    config.inputs.forEach((input) => {
-      if (input.default !== undefined) {
-        initialValues[input.id] = input.default;
-      } else if (input.options) {
-        const defaultOptions = input.options.filter((opt) => opt.isDefault);
-        if (defaultOptions.length > 0) {
-          if (input.type === "multiselect") {
-            // multiselect 类型：将所有标记为默认的选项值组成数组
-            initialValues[input.id] = defaultOptions.map((opt) => opt.value);
-          } else {
-            // select 类型：只取第一个默认选项的值
-            initialValues[input.id] = defaultOptions[0].value;
+    if (initialValues) {
+      // 如果有 deeplink 提供的初始值，直接使用
+      setFormValues(initialValues);
+    } else {
+      // 否则使用配置默认值
+      const defaultValues: PromptValues = {};
+      config.inputs.forEach((input) => {
+        if (input.default !== undefined) {
+          defaultValues[input.id] = input.default;
+        } else if (input.options) {
+          const defaultOptions = input.options.filter((opt) => opt.isDefault);
+          if (defaultOptions.length > 0) {
+            if (input.type === "multiselect") {
+              // multiselect 类型：将所有标记为默认的选项值组成数组
+              defaultValues[input.id] = defaultOptions.map((opt) => opt.value);
+            } else {
+              // select 类型：只取第一个默认选项的值
+              defaultValues[input.id] = defaultOptions[0].value;
+            }
           }
         }
-      }
-    });
-    setFormValues(initialValues);
-  }, [config]);
+      });
+      setFormValues(defaultValues);
+    }
+  }, [config, initialValues]);
+
+  // 自动执行逻辑
+  useEffect(() => {
+    if (autoExecute && Object.keys(formValues).length > 0) {
+      // 延迟 100ms 确保组件完全渲染
+      const timer = setTimeout(() => {
+        handlePrimaryAction(formValues);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [autoExecute, formValues]);
 
   // 保存表单值到配置文件的 default 属性，以及 lastUseTime，以便下次使用
   const saveFormValues = async (values: PromptValues) => {
@@ -627,8 +656,10 @@ export function PromptForm({ config: initialConfig }: PromptFormProps) {
         <PromptField
           key={input.id}
           config={input}
+          value={formValues[input.id]}
           onChange={handleFieldChange}
           error={errors[input.id]}
+          warning={fieldWarnings[input.id]}
         />
       ))}
     </Form>

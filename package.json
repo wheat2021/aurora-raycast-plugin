@@ -25,6 +25,20 @@
       "description": "Processor slot 1 for custom prompts",
       "mode": "view",
       "disabledByDefault": true,
+      "arguments": [
+        {
+          "name": "promptPath",
+          "type": "text",
+          "placeholder": "Absolute path to prompt file",
+          "required": false
+        },
+        {
+          "name": "inputs",
+          "type": "text",
+          "placeholder": "Input values (JSON string)",
+          "required": false
+        }
+      ],
       "preferences": [
         {
           "name": "name",
@@ -50,6 +64,20 @@
       "description": "Processor slot 2 for custom prompts",
       "mode": "view",
       "disabledByDefault": true,
+      "arguments": [
+        {
+          "name": "promptPath",
+          "type": "text",
+          "placeholder": "Absolute path to prompt file",
+          "required": false
+        },
+        {
+          "name": "inputs",
+          "type": "text",
+          "placeholder": "Input values (JSON string)",
+          "required": false
+        }
+      ],
       "preferences": [
         {
           "name": "name",
@@ -75,6 +103,20 @@
       "description": "Processor slot 3 for custom prompts",
       "mode": "view",
       "disabledByDefault": true,
+      "arguments": [
+        {
+          "name": "promptPath",
+          "type": "text",
+          "placeholder": "Absolute path to prompt file",
+          "required": false
+        },
+        {
+          "name": "inputs",
+          "type": "text",
+          "placeholder": "Input values (JSON string)",
+          "required": false
+        }
+      ],
       "preferences": [
         {
           "name": "name",
@@ -100,6 +142,20 @@
       "description": "Processor slot 4 for custom prompts",
       "mode": "view",
       "disabledByDefault": true,
+      "arguments": [
+        {
+          "name": "promptPath",
+          "type": "text",
+          "placeholder": "Absolute path to prompt file",
+          "required": false
+        },
+        {
+          "name": "inputs",
+          "type": "text",
+          "placeholder": "Input values (JSON string)",
+          "required": false
+        }
+      ],
       "preferences": [
         {
           "name": "name",
@@ -125,6 +181,20 @@
       "description": "Processor slot 5 for custom prompts",
       "mode": "view",
       "disabledByDefault": true,
+      "arguments": [
+        {
+          "name": "promptPath",
+          "type": "text",
+          "placeholder": "Absolute path to prompt file",
+          "required": false
+        },
+        {
+          "name": "inputs",
+          "type": "text",
+          "placeholder": "Input values (JSON string)",
+          "required": false
+        }
+      ],
       "preferences": [
         {
           "name": "name",
@@ -150,6 +220,20 @@
       "description": "Processor slot 6 for custom prompts",
       "mode": "view",
       "disabledByDefault": true,
+      "arguments": [
+        {
+          "name": "promptPath",
+          "type": "text",
+          "placeholder": "Absolute path to prompt file",
+          "required": false
+        },
+        {
+          "name": "inputs",
+          "type": "text",
+          "placeholder": "Input values (JSON string)",
+          "required": false
+        }
+      ],
       "preferences": [
         {
           "name": "name",
@@ -175,6 +259,20 @@
       "description": "Processor slot 7 for custom prompts",
       "mode": "view",
       "disabledByDefault": true,
+      "arguments": [
+        {
+          "name": "promptPath",
+          "type": "text",
+          "placeholder": "Absolute path to prompt file",
+          "required": false
+        },
+        {
+          "name": "inputs",
+          "type": "text",
+          "placeholder": "Input values (JSON string)",
+          "required": false
+        }
+      ],
       "preferences": [
         {
           "name": "name",
@@ -200,6 +298,20 @@
       "description": "Processor slot 8 for custom prompts",
       "mode": "view",
       "disabledByDefault": true,
+      "arguments": [
+        {
+          "name": "promptPath",
+          "type": "text",
+          "placeholder": "Absolute path to prompt file",
+          "required": false
+        },
+        {
+          "name": "inputs",
+          "type": "text",
+          "placeholder": "Input values (JSON string)",
+          "required": false
+        }
+      ],
       "preferences": [
         {
           "name": "name",
@@ -225,6 +337,20 @@
       "description": "Processor slot 9 for custom prompts",
       "mode": "view",
       "disabledByDefault": true,
+      "arguments": [
+        {
+          "name": "promptPath",
+          "type": "text",
+          "placeholder": "Absolute path to prompt file",
+          "required": false
+        },
+        {
+          "name": "inputs",
+          "type": "text",
+          "placeholder": "Input values (JSON string)",
+          "required": false
+        }
+      ],
       "preferences": [
         {
           "name": "name",

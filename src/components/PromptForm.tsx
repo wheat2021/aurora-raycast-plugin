@@ -59,7 +59,41 @@ export function PromptForm({
 }: PromptFormProps) {
   // 使用状态管理配置，以便保存后能刷新
   const [config, setConfig] = useState<PromptConfig>(initialConfig);
-  const [formValues, setFormValues] = useState<PromptValues>({});
+
+  // 初始化表单值：优先使用 initialValues（deeplink），否则使用配置的 default 值
+  const [formValues, setFormValues] = useState<PromptValues>(() => {
+    if (initialValues) {
+      console.log("[PromptForm] useState 初始化：使用 deeplink 初始值:", initialValues);
+      return initialValues;
+    }
+
+    // 否则使用配置默认值
+    const defaultValues: PromptValues = {};
+    initialConfig.inputs.forEach((input) => {
+      // 优先使用字段配置的 default 属性
+      if (input.default !== undefined) {
+        defaultValues[input.id] = input.default;
+        console.log(`[PromptForm] useState 初始化：字段 ${input.id} (${input.type}) 设置 default:`, input.default);
+      }
+      // 对于有 options 的字段（select/multiselect），检查是否有标记为默认的选项
+      else if (input.options) {
+        const defaultOptions = input.options.filter((opt) => opt.isDefault);
+        if (defaultOptions.length > 0) {
+          if (input.type === "multiselect") {
+            // multiselect 类型：将所有标记为默认的选项值组成数组
+            defaultValues[input.id] = defaultOptions.map((opt) => opt.value);
+          } else {
+            // select 类型：只取第一个默认选项的值
+            defaultValues[input.id] = defaultOptions[0].value;
+          }
+          console.log(`[PromptForm] useState 初始化：字段 ${input.id} (${input.type}) 使用 isDefault 选项:`, defaultValues[input.id]);
+        }
+      }
+    });
+    console.log("[PromptForm] useState 初始化：最终 defaultValues:", defaultValues);
+    return defaultValues;
+  });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [fieldWarnings, setFieldWarnings] = useState<Record<string, string>>(
@@ -75,16 +109,23 @@ export function PromptForm({
   // 组件挂载时初始化表单值
   // 优先级：1. Deeplink 提供的 initialValues；2. 字段配置的 default 属性；3. 选项中 isDefault=true 的项
   useEffect(() => {
+    console.log("[PromptForm] useEffect 触发，config.inputs:", config.inputs.map(i => ({ id: i.id, type: i.type, default: i.default })));
+
     if (initialValues) {
       // 如果有 deeplink 提供的初始值，直接使用
+      console.log("[PromptForm] 使用 deeplink 初始值:", initialValues);
       setFormValues(initialValues);
     } else {
       // 否则使用配置默认值
       const defaultValues: PromptValues = {};
       config.inputs.forEach((input) => {
+        // 优先使用字段配置的 default 属性
         if (input.default !== undefined) {
           defaultValues[input.id] = input.default;
-        } else if (input.options) {
+          console.log(`[PromptForm] 字段 ${input.id} (${input.type}) 设置 default:`, input.default);
+        }
+        // 对于有 options 的字段（select/multiselect），检查是否有标记为默认的选项
+        else if (input.options) {
           const defaultOptions = input.options.filter((opt) => opt.isDefault);
           if (defaultOptions.length > 0) {
             if (input.type === "multiselect") {
@@ -94,9 +135,13 @@ export function PromptForm({
               // select 类型：只取第一个默认选项的值
               defaultValues[input.id] = defaultOptions[0].value;
             }
+            console.log(`[PromptForm] 字段 ${input.id} (${input.type}) 使用 isDefault 选项:`, defaultValues[input.id]);
           }
         }
+        // 注意：selectInFolder 类型的字段应该在上面的 input.default 分支中处理
+        // 因为它的选项是动态从文件夹读取的，不存在 options 属性
       });
+      console.log("[PromptForm] 最终初始化的 defaultValues:", defaultValues);
       setFormValues(defaultValues);
     }
   }, [config, initialValues]);
@@ -589,12 +634,12 @@ export function PromptForm({
           <Action.SubmitForm
             title={actionTitles.primary}
             onSubmit={handlePrimaryAction}
-            // Form 中 primary action 自动使用 Cmd+Enter
+          // Form 中 primary action 自动使用 Cmd+Enter
           />
           <Action.SubmitForm
             title={actionTitles.secondary}
             onSubmit={handleSecondaryAction}
-            // Form 中 secondary action 自动使用 Cmd+Shift+Enter
+          // Form 中 secondary action 自动使用 Cmd+Shift+Enter
           />
           <ActionPanel.Section title="字段配置">
             <ActionPanel.Submenu

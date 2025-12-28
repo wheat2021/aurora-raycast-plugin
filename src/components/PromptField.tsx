@@ -76,11 +76,12 @@ export function PromptField({
       // 从 folder 路径读取文件和目录
       const folderOptions = config.folder
         ? readFolderValues(config.folder, {
-            valueItemType: config.valueItemType,
-            regIncludeFilter: config.regIncludeFilter,
-            regExcludeFilter: config.regExcludeFilter,
-          })
+          valueItemType: config.valueItemType,
+          regIncludeFilter: config.regIncludeFilter,
+          regExcludeFilter: config.regExcludeFilter,
+        })
         : [];
+
       return (
         <Form.Dropdown
           id={config.id}
